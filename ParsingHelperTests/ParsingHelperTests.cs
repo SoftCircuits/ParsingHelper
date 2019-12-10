@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) 2019 Jonathan Wood (www.softcircuits.com)
+// Licensed under the MIT license.
+//
+
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SoftCircuits.Parsing.Helper;
 
