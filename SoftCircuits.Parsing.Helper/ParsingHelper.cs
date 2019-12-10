@@ -138,7 +138,7 @@ namespace SoftCircuits.Parsing.Helper
         /// Moves to the next occurrence of any one of the specified characters.
         /// Returns true if a match was found. Otherwise, false is returned.
         /// </summary>
-        /// <param name="chars">Array of characters to search for.</param>
+        /// <param name="chars">Array of characters for which to search.</param>
         public bool SkipTo(params char[] chars)
         {
             int index = Text.IndexOfAny(chars, Index);
