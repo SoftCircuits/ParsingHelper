@@ -58,7 +58,7 @@ The `SkipTo()` method skips to the next occurrence of a given string.
 helper.SkipTo("abc");
 ```
 
-This example advances the current position to the start of the next occurrence of `"abc"`. If no more occurrences are found, this method advances to the very end of the text and returns `false`. The `SkipTo()` method supports an optional `StringComparision` value to specify how characters should be compared.
+This example advances the current position to the start of the next occurrence of `"abc"`. If no more occurrences are found, this method advances to the very end of the text and returns `false`. The `SkipTo()` method supports an optional `StringComparison` value to specify how characters should be compared.
 
 The `SkipTo()` method is overloaded to also accept any number of `char` arguments (or a `char` array).
 
@@ -140,5 +140,5 @@ Neither of these methods change the current position.
 
 ## Comparing Text
 
-Finally, you may need to test if a predefined string is equal to the text at the current location. The `MatchesCurrentPosition()` method tests this. It accepts a string argument and returns a Boolean value that indicates if the specified string matches the text starting at the current location.  The `MatchesCurrentPosition()` method supports an optional `StringComparision` value to specify how characters should be compared.
+Finally, you may need to test if a predefined string is equal to the text at the current location. The `MatchesCurrentPosition()` method tests this. It accepts a string argument and returns a Boolean value that indicates if the specified string matches the text starting at the current location.  The `MatchesCurrentPosition()` method supports an optional `StringComparison` value to specify how characters should be compared.
 
