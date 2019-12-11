@@ -4,6 +4,7 @@
 
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
 using SoftCircuits.Parsing.Helper;
 
 namespace ParsingHelperTests
@@ -11,19 +12,6 @@ namespace ParsingHelperTests
     [TestClass]
     public class ParsingHelperTests
     {
-        [TestMethod]
-        public void Test()
-        {
-            ParsingHelper helper = new ParsingHelper("Name=value");
-
-            if (helper.SkipTo('='))
-            {
-                helper.Next();
-                string s = helper.Extract(helper.Index);
-                Assert.AreEqual("value", s);
-            }
-        }
-
         [TestMethod]
         public void BasicTests()
         {
@@ -44,6 +32,8 @@ namespace ParsingHelperTests
             Assert.AreEqual('b', helper.Peek());
             helper.Next(2);
             Assert.AreEqual('d', helper.Peek());
+            helper.Skip('f', 'e', 'd');
+            Assert.AreEqual('g', helper.Peek());
 
             helper.SkipTo("mno");
             Assert.AreEqual('m', helper.Peek());
@@ -97,6 +87,27 @@ namespace ParsingHelperTests
 
             helper.Reset();
             helper.SkipTo("UPON", StringComparison.OrdinalIgnoreCase);
+        }
+
+        [TestMethod]
+        public void CountWordsTest()
+        {
+            string testString = "Once upon a time, in a \r\n" +
+                "land far, far away, there was small boy named \"Henry\".";
+            int words = 0;
+            char[] wordChars = "abcdefghijklmnopqrstuvwxyz'".ToCharArray();
+
+            ParsingHelper helper = new ParsingHelper(testString);
+
+            while (true)
+            {
+                helper.SkipWhile(c => !wordChars.Contains(c));
+                if (helper.EndOfText)
+                    break;
+                helper.SkipWhile(c => wordChars.Contains(c));
+                words++;
+            }
+            Assert.AreEqual(16, words);
         }
     }
 }
