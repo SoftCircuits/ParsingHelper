@@ -12,6 +12,19 @@ namespace ParsingHelperTests
     public class ParsingHelperTests
     {
         [TestMethod]
+        public void Test()
+        {
+            ParsingHelper helper = new ParsingHelper("Name=value");
+
+            if (helper.SkipTo('='))
+            {
+                helper.Next();
+                string s = helper.Extract(helper.Index);
+                Assert.AreEqual("value", s);
+            }
+        }
+
+        [TestMethod]
         public void BasicTests()
         {
             string testString = "Abcdefghijklmnopqrstuvwxyz";
@@ -29,7 +42,7 @@ namespace ParsingHelperTests
 
             helper.Next();
             Assert.AreEqual('b', helper.Peek());
-            helper.Skip(2);
+            helper.Next(2);
             Assert.AreEqual('d', helper.Peek());
 
             helper.SkipTo("mno");
@@ -43,7 +56,7 @@ namespace ParsingHelperTests
             Assert.AreEqual(26, helper.Index);
             Assert.AreEqual(ParsingHelper.NullChar, helper.Peek());
 
-            helper.Skip(-1000);
+            helper.Next(-1000);
             Assert.AreEqual(0, helper.Index);
 
             helper.Reset();
@@ -66,7 +79,7 @@ namespace ParsingHelperTests
 
             helper.SkipTo("land");
             Assert.IsTrue(helper.MatchesCurrentPosition("land"));
-            helper.Skip("land".Length);
+            helper.Next("land".Length);
             helper.SkipWhiteSpace();
             Assert.AreEqual('f', helper.Peek());
 
@@ -75,7 +88,7 @@ namespace ParsingHelperTests
             Assert.AreEqual(',', helper.Peek());
 
             helper.SkipTo("named");
-            helper.Skip("named".Length);
+            helper.Next("named".Length);
             helper.SkipWhiteSpace();
             Assert.AreEqual('\"', helper.Peek());
             s = helper.ParseQuotedText();

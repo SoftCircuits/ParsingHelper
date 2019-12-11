@@ -35,7 +35,7 @@ namespace SoftCircuits.Parsing.Helper
         /// Constructs a TextParse instance.
         /// </summary>
         /// <param name="text">Text to be parsed.</param>
-        public ParsingHelper(string text = null)
+        public ParsingHelper(string text)
         {
             Reset(text);
         }
@@ -103,7 +103,7 @@ namespace SoftCircuits.Parsing.Helper
         /// </summary>
         /// <param name="count">The number of characters to move ahead. Use negative numbers
         /// to move back.</param>
-        public void Skip(int count)
+        public void Next(int count)
         {
             int index = Index + count;
             if (index < 0)
@@ -155,6 +155,11 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
+        /// Moves the current position forward to the next newline character.
+        /// </summary>
+        public void SkipToEndOfLine() => SkipTo('\r', '\n');
+
+        /// <summary>
         /// Moves the current position to the next character that is not whitespace. This
         /// method does not consider a new line character to be whitespace.
         /// </summary>
@@ -163,11 +168,6 @@ namespace SoftCircuits.Parsing.Helper
             while (char.IsWhiteSpace(Peek()))
                 Next();
         }
-
-        /// <summary>
-        /// Moves the current position forward to the next newline character.
-        /// </summary>
-        public void SkipToEndOfLine() => SkipTo('\r', '\n');
 
         /// <summary>
         /// Moves to the next occurrence of any character that is not one

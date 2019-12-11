@@ -2,6 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Jonathan Wood</Authors>
+    <Company>SoftCircuits</Company>
+    <Product>ParsingHelper</Product>
+    <Copyright>Copyright © 2019 SoftCircuits</Copyright>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <PackageReleaseNotes>Initial release.</PackageReleaseNotes>
+    <PackageTags>parsing text-parsing parsing-helper .net csharp tokenizer</PackageTags>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/SoftCircuits/ParsingHelper</RepositoryUrl>
   </PropertyGroup>
 
 </Project>
