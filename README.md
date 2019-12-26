@@ -24,9 +24,9 @@ The `ParsingHelper` constructor accepts a string argument that represents the te
 ParsingHelper helper = new ParsingHelper("abc");
 ```
 
-If you want to start over, you can call the `Reset()` method. This method sets the current position back to the start of the current string. Optionally, you can pass a string argument to `Reset()`. In this case, ParsingHelper will be configured to start parsing the new string that was provided.
+You can call the `Reset()` method to reset the current position back to the start of the string. Optionally, you can pass a string argument to `Reset()`. In this case, ParsingHelper will be configured to start parsing the new string that was provided.
 
-Use the `Peek()` method to read the character at the current location. In addition, the `Peek()` method can optionally accept an integer argument. This argument specifies the character position as the number of characters ahead of the current position. For example, `Peek(1)` would return the character that comes after the character at the current position. (Calling `Peek()` is equal to calling `Peek(0)`.)
+Use the `Peek()` method to read the character at the current location. In addition, the `Peek()` method can optionally accept an integer argument. This argument specifies the character position as the number of characters ahead of the current position. For example, `Peek(1)` would return the character that comes after the character at the current position. (Calling `Peek()` is equal to calling `Peek(0)`.) If the position specified is out of bounds for the current string, `Peek()` returns  `ParsingHelper.NullChar` (equal to `'\0'`).
 
 Note that `Peek()` never changes the current position (even when arguments are passed). To advance to the next position, use the `Next()` method. The `Next()` method advances the current position to the next character. This method can also accept an optional argument that specifies the number of characters to advance. For example, if you pass `5`, the current position will be advanced five characters. (Calling `Next()` with no arguments is equal to calling `Next(1)`.)
 
@@ -35,8 +35,6 @@ The `EndOfText` property returns `true` when you have reached the end of the tex
 The `Remaining` property returns the number of characters still to be parsed. The value returned is equal to the length of the string being parsed minus the current position.
 
 The `ParsingHelper` class also exposes two properties: `Text` and `Index`. `Text` is a read-only property that returns the current text string that is being parsed. `Index` is a read-only property that returns the current position within the current text string.
-
-Finally, there is one static property, `ParsingHelper.NullChar`, which is equal to `'\0'`. This character is returned when you read a character from an invalid position.
 
 ```cs
 ParsingHelper helper = new ParsingHelper("abc");
