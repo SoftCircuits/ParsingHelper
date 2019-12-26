@@ -90,10 +90,13 @@ The following example would skip over any characters that are not an equal sign:
 helper.SkipWhile(c => c != '=');
 ```
 
-For another example, if the `SkipWhiteSpace()` method wasn't available, you could implement it with the following code.
+For another example, see how `SkipWhile()` is used to implement the `SkipWhiteSpace()` method.
 
 ```cs
-helper.SkipWhile(char.IsWhiteSpace);
+public void SkipWhiteSpace()
+{
+    SkipWhile(char.IsWhiteSpace);
+}
 ```
 
 The `ParseWhile()` method is similar to `SkipWhile()` except that `ParseWhile()` will return the characters that were skipped. (Note that `SkipWhile()` will perform slightly faster.)
