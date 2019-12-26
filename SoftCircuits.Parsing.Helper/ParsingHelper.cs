@@ -120,6 +120,8 @@ namespace SoftCircuits.Parsing.Helper
         /// current position to the end of the input text and returns <c>false</c>.
         /// </summary>
         /// <param name="s">String to find.</param>
+        /// <returns>Returns a Boolean value that indicates if any of the specified characters
+        /// were found.</returns>
         public bool SkipTo(string s, StringComparison comparison = StringComparison.Ordinal)
         {
             int index = Text.IndexOf(s, Index, comparison);
@@ -138,6 +140,8 @@ namespace SoftCircuits.Parsing.Helper
         /// moves the current position to the end of the input text and returns <c>false</c>.
         /// </summary>
         /// <param name="chars">Characters to skip to.</param>
+        /// <returns>Returns a Boolean value that indicates if any of the specified characters
+        /// were found.</returns>
         public bool SkipTo(params char[] chars)
         {
             int index = Text.IndexOfAny(chars, Index);
@@ -153,15 +157,16 @@ namespace SoftCircuits.Parsing.Helper
         /// <summary>
         /// Moves the current position forward to the next newline character.
         /// </summary>
-        public void SkipToEndOfLine() => SkipTo('\r', '\n');
+        /// <returns>Returns a Boolean value that indicates if any newline characters
+        /// were found.</returns>
+        public bool SkipToEndOfLine() => SkipTo('\r', '\n');
 
         /// <summary>
         /// Moves the current position to the next character that is not whitespace.
         /// </summary>
         public void SkipWhiteSpace()
         {
-            while (char.IsWhiteSpace(Peek()))
-                Next();
+            SkipWhile(char.IsWhiteSpace);
         }
 
         /// <summary>
@@ -253,7 +258,7 @@ namespace SoftCircuits.Parsing.Helper
         /// </summary>
         /// <param name="start">0-based position of first character to be extracted.</param>
         /// <returns>Returns the extracted string.</returns>
-        public string Extract(int start) => Text.Substring(start, Text.Length);
+        public string Extract(int start) => Extract(start, Text.Length);
 
         /// <summary>
         /// Extracts a substring from the specified range of the text being parsed.
