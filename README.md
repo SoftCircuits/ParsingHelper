@@ -139,5 +139,4 @@ Neither of these methods change the current position.
 
 ## Comparing Text
 
-Finally, you may need to test if a predefined string is equal to the text at the current location. The `MatchesCurrentPosition()` method tests this. It accepts a string argument and returns a Boolean value that indicates if the specified string matches the text starting at the current location.  The `MatchesCurrentPosition()` method supports an optional `StringComparison` value to specify how characters should be compared.
-
+Finally, you may need to test if a predefined string is equal to the text at the current location. The `MatchesCurrentPosition()` method tests this. It accepts a string argument and returns a Boolean value that indicates if the specified string matches the text starting at the current location.  The `MatchesCurrentPosition()` method supports an optional `StringComparison` value to specify how characters should be compared. Note that while this method can be handy, it's less performant than most methods in this class. Any type of search function that works by calling this method at each successive position should be avoided where performance matters.
