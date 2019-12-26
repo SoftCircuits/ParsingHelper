@@ -62,7 +62,7 @@ The `SkipTo()` method is overloaded to also accept any number of `char` argument
 helper.SkipTo('x', 'y', 'z');
 ```
 
-This example will advance the current position to the first occurrence of any of the specified characters. If none of the characters are found, this method advances to the end of the text and returns `false`.
+This example will advance the current position to the first occurrence of any one of the specified characters. If none of the characters are found, this method advances to the end of the text and returns `false`.
 
 Use the `SkipToEndOfLine()` to advance the current position to the first character that is not a new-line character (i.e., `'\r'` or `'\n'`).
 
