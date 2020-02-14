@@ -102,6 +102,7 @@ namespace ParsingHelperTests
                 "land far, far away, there was small boy named \"Henry\".";
             int words = 0;
             char[] wordChars = "abcdefghijklmnopqrstuvwxyz'".ToCharArray();
+            char[] delimiters = { ' ', '\r', '\n', '.', ',', '"' };
 
             ParsingHelper helper = new ParsingHelper(testString);
 
@@ -114,6 +115,35 @@ namespace ParsingHelperTests
                 words++;
             }
             Assert.AreEqual(16, words);
+
+            words = 0;
+            helper.Reset();
+            while (!helper.EndOfText)
+            {
+                string token = helper.ParseToken(delimiters);
+                if (token.Length > 0)
+                    words++;
+            }
+            Assert.AreEqual(16, words);
+
+            words = 0;
+            helper.Reset();
+            while (!helper.EndOfText)
+            {
+                string token = helper.ParseToken(c => delimiters.Contains(c));
+                if (token.Length > 0)
+                    words++;
+            }
+            Assert.AreEqual(16, words);
+
+            helper.Reset();
+            Assert.AreEqual("Once", helper.ParseToken(delimiters));
+            Assert.AreEqual("upon", helper.ParseToken(delimiters));
+            Assert.AreEqual("a", helper.ParseToken(delimiters));
+            Assert.AreEqual("time", helper.ParseToken(delimiters));
+            Assert.AreEqual("in", helper.ParseToken(delimiters));
+            Assert.AreEqual("a", helper.ParseToken(delimiters));
+            Assert.AreEqual("land", helper.ParseToken(delimiters));
         }
 
         [TestMethod]

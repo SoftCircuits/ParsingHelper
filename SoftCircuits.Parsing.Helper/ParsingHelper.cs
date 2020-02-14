@@ -218,6 +218,32 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
+        /// Skips any characters that are in the list of delimiters, and then parses any
+        /// characters that are not in the list of delimiters. Returns the parsed
+        /// characters.
+        /// </summary>
+        /// <param name="delimiters">Delimiter characters.</param>
+        /// <returns>Returns the parsed token.</returns>
+        public string ParseToken(params char[] delimiters)
+        {
+            SkipWhile(c => delimiters.Contains(c));
+            return ParseWhile(c => !delimiters.Contains(c));
+        }
+
+        /// <summary>
+        /// Skips any characters for which <paramref name="predicate"/> returns true, and
+        /// then parses any characters for which <paramref name="predicate"/> returns false.
+        /// Returns the parsed characters.
+        /// </summary>
+        /// <param name="predicate">Function that returns true for delimiter characters.</param>
+        /// <returns>Returns the parsed token.</returns>
+        public string ParseToken(Func<char, bool> predicate)
+        {
+            SkipWhile(c => predicate(c));
+            return ParseWhile(c => !predicate(c));
+        }
+
+        /// <summary>
         /// Parses a quoted string. Interprets the character at the starting position as the quote
         /// character. Two quote characters together within the string are interpreted as a single
         /// quote literal and not the end of the string. Returns the text within the quotes and
@@ -283,35 +309,35 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>Returns the extracted string.</returns>
         public string Extract(int start, int end) => Text.Substring(start, end - start);
 
-    #region Operator overloads
+        #region Operator overloads
 
-    public static ParsingHelper operator ++(ParsingHelper helper)
-    {
-        helper.Next();
-        return helper;
-    }
+        public static implicit operator int(ParsingHelper helper) => helper.Index;
 
-    public static ParsingHelper operator --(ParsingHelper helper)
-    {
-        helper.Next(-1);
-        return helper;
-    }
+        public static ParsingHelper operator ++(ParsingHelper helper)
+        {
+            helper.Next(1);
+            return helper;
+        }
 
-    public static ParsingHelper operator +(ParsingHelper helper, int count)
-    {
-        helper.Next(count);
-        return helper;
-    }
+        public static ParsingHelper operator --(ParsingHelper helper)
+        {
+            helper.Next(-1);
+            return helper;
+        }
 
-    public static ParsingHelper operator -(ParsingHelper helper, int count)
-    {
-        helper.Next(-count);
-        return helper;
-    }
+        public static ParsingHelper operator +(ParsingHelper helper, int count)
+        {
+            helper.Next(count);
+            return helper;
+        }
 
-    public static implicit operator int(ParsingHelper helper) => helper.Index;
+        public static ParsingHelper operator -(ParsingHelper helper, int count)
+        {
+            helper.Next(-count);
+            return helper;
+        }
 
-    #endregion
+        #endregion
 
     }
 }
