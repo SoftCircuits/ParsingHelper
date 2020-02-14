@@ -8,7 +8,7 @@ Install-Package SoftCircuits.Parsing.Helper
 
 ## Overview
 
-ParsingHelper is a .NET class library to assist with parsing text. It helps by tracking the current position within the text being parsed and provides a number of helper methods to ease some parsing tasks.
+ParsingHelper is a .NET class library to assist with parsing text. It helps by tracking the current position within the text being parsed and provides a number of helper methods to ease many parsing tasks.
 
 One of the more difficult things to worry about when parsing text with .NET is that you never attempt to read beyond the valid range of the input text. In .NET languages, this produces a run-time exception. Since text parsers often have to deal with varied or malformed input, in most cases you'll want to detect the problem rather than aborting your code with a run-time exception.
 
@@ -70,7 +70,7 @@ A common task when parsing is to skip over any whitespace characters. The `SkipW
 helper.SkipWhiteSpace();
 ```
 
-Use the `SkipToEndOfLine()` to advance the current position to the first character that is a new-line character (i.e., `'\r'` or `'\n'`). If neither of the characters are found, this method advances to the end of the text and returns `false`.
+Use the `SkipToEndOfLine()` to advance the current position to the first character that is a new-line character (i.e., `'\r'` or `'\n'`). If neither of the characters are found, this method advances to the end of the text and returns `false`. Use the `SkipToNextLine()` to advance the current position to the first character in the next line. If no next line is found, this method advances to the end of the text and returns `false`.
 
 To skip over a group of characters, you can use the `Skip()` method. This method accepts any number of `char` arguments (or a `char` array). It will advance the current position to the first character that is not one of the arguments.
 
