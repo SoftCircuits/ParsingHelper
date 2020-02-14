@@ -126,7 +126,7 @@ In addition, the library also defines the `ParseToken()` method. This method tak
 ```cs
 string token;
 token = helper.ParseToken(' ', '\t', '\r', '\n');
-token = helper.ParseToken(char.IsWhiteSpace());
+token = helper.ParseToken(char.IsWhiteSpace);
 ```
 
 ## Parsing Quoted Text
