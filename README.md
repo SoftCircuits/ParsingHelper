@@ -121,6 +121,14 @@ The following example will parse all letters starting from the current position.
 string token = helper.ParseWhile(char.IsLetter);
 ```
 
+In addition, the library also defines the `ParseToken()` method. This method takes a list of delimiters and will skip all characters that are a delimiter, then parse all characters that are not a delimiter and return the parsed characters. Delimiters can be specified as character parameters, a character array or a predicate that returns true if the given character is a delimiter.
+
+```cs
+string token;
+token = helper.ParseToken(' ', '\t', '\r', '\n');
+token = helper.ParseToken(char.IsWhiteSpace());
+```
+
 ## Parsing Quoted Text
 
 You may have an occassion to parse quoted text. In this case, you will probably want the quoted text (without the quotes). The `ParseQuotedText()` method makes this easy.
