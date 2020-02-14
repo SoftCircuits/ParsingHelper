@@ -42,6 +42,8 @@ helper -= 2;         // Same as helper.Next(-2)
 helper = helper + 3; // Same as helper.Next(3)
 helper = helper - 3; // Same as helper.Next(-3)
 int i = helper;      // Same as i = helper.Index
+helper += 1000000;   // Safely moves to the end of the text
+helper -= 1000000;   // Safely moves to the start of the text
 ```
 
 The `Text` property returns the string being parsed. And the `Index` property returns the current position within the string being parsed.
@@ -54,7 +56,7 @@ ParsingHelper helper = new ParsingHelper("abc");
 while (!helper.EndOfText)
 {
     Console.WriteLine(helper.Peek());
-    helper.Next();
+    helper++;
 }
 ```
 
@@ -119,6 +121,14 @@ The following example will parse all letters starting from the current position.
 
 ```cs
 string token = helper.ParseWhile(char.IsLetter);
+```
+
+In addition, the library also defines the `ParseToken()` method. This method takes a list of delimiters and will skip all characters that are a delimiter, then parse all characters that are not a delimiter and return the parsed characters. Delimiters can be specified as character parameters, a character array or a predicate that returns true if the given character is a delimiter.
+
+```cs
+string token;
+token = helper.ParseToken(' ', '\t', '\r', '\n');
+token = helper.ParseToken(char.IsWhiteSpace);
 ```
 
 ## Parsing Quoted Text
