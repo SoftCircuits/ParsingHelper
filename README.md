@@ -8,7 +8,7 @@ Install-Package SoftCircuits.Parsing.Helper
 
 ## Overview
 
-ParsingHelper is a .NET class library to assist with parsing text. It helps by tracking the current position within the text being parsed and provides a number of helper methods to ease some parsing tasks.
+ParsingHelper is a .NET class library to assist with parsing text. It helps by tracking the current position within the text being parsed and provides a number of helper methods to ease many parsing tasks.
 
 One of the more difficult things to worry about when parsing text with .NET is that you never attempt to read beyond the valid range of the input text. In .NET languages, this produces a run-time exception. Since text parsers often have to deal with varied or malformed input, in most cases you'll want to detect the problem rather than aborting your code with a run-time exception.
 
