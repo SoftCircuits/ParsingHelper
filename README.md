@@ -30,6 +30,20 @@ Use the `Peek()` method to read the character at the current location. In additi
 
 Note that `Peek()` never changes the current position (even when arguments are passed). To advance to the next position, use the `Next()` method. The `Next()` method advances the current position to the next character. This method can also accept an optional argument that specifies the number of characters to advance. For example, if you pass `5`, the current position will be advanced five characters. (Calling `Next()` with no arguments is equal to calling `Next(1)`.)
 
+In addition, this class overloads several operators that can be used as a shortcut to change the current position. These are demonstrated in the following snippet:
+
+```cs
+ParsingHelper helper = new ParsingHelper("abc");
+
+helper++;            // Same as helper.Next()
+helper--;            // Same as helper.Next(-1)
+helper += 2;         // Same as helper.Next(2)
+helper -= 2;         // Same as helper.Next(-2)
+helper = helper + 3; // Same as helper.Next(3)
+helper = helper - 3; // Same as helper.Next(-3)
+int i = helper;      // Same as i = helper.Index
+```
+
 The `Text` property returns the string being parsed. And the `Index` property returns the current position within the string being parsed.
 
 The `EndOfText` property returns `true` when you have reached the end of the text. And the `Remaining` property returns the number of characters still to be parsed. The value returned is equal to the length of the string being parsed minus `Index`.
