@@ -54,7 +54,7 @@ ParsingHelper helper = new ParsingHelper("abc");
 while (!helper.EndOfText)
 {
     Console.WriteLine(helper.Peek());
-    helper.Next();
+    helper++;
 }
 ```
 
