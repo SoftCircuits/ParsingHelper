@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2019 Jonathan Wood (www.softcircuits.com)
+﻿// Copyright (c) 2019-2020 Jonathan Wood (www.softcircuits.com)
 // Licensed under the MIT license.
 //
 
@@ -67,9 +67,15 @@ namespace ParsingHelperTests
             helper.SkipToEndOfLine();
             Assert.AreEqual('\r', helper.Peek());
 
+            helper.SkipToNextLine();
+            Assert.AreEqual('l', helper.Peek());
+            helper.Reset();
+            helper.SkipToNextLine();
+            Assert.AreEqual('l', helper.Peek());
+
             helper.SkipTo("land");
             Assert.IsTrue(helper.MatchesCurrentPosition("land"));
-            helper.Next("land".Length);
+            helper += "land".Length;
             helper.SkipWhiteSpace();
             Assert.AreEqual('f', helper.Peek());
 
@@ -108,6 +114,41 @@ namespace ParsingHelperTests
                 words++;
             }
             Assert.AreEqual(16, words);
+        }
+
+        [TestMethod]
+        public void OperatorOverloadTest()
+        {
+            string testString = "Once upon a time, in a \r\n" +
+                "land far, far away, there was small boy named \"Henry\".";
+
+            ParsingHelper helper = new ParsingHelper(testString);
+
+            int i = 0;
+            while (!helper.EndOfText)
+            {
+                Assert.AreEqual(i++, helper.Index);
+                helper++;
+            }
+
+            helper.Reset();
+            helper++;
+            Assert.AreEqual(1, helper);
+
+            helper--;
+            Assert.AreEqual(0, helper);
+
+            helper += 2;
+            Assert.AreEqual(2, helper);
+
+            helper = helper + 2;
+            Assert.AreEqual(4, helper);
+
+            helper += 10000;
+            Assert.AreEqual(helper.Text.Length, helper);
+
+            helper -= 10000;
+            Assert.AreEqual(0, helper);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2019 Jonathan Wood (www.softcircuits.com)
+﻿// Copyright (c) 2019-2020 Jonathan Wood (www.softcircuits.com)
 // Licensed under the MIT license.
 //
 
@@ -155,6 +155,20 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
+        /// Moves the current position forward to the start of the next line.
+        /// </summary>
+        /// <returns>Returns a Boolean value that indicates if another line was
+        /// found.</returns>
+        public bool SkipToNextLine()
+        {
+            SkipToEndOfLine();
+            if (Peek() == '\r' && Peek(1) == '\n')
+                Next();
+            Next();
+            return Index < Text.Length;
+        }
+
+        /// <summary>
         /// Moves the current position forward to the next newline character.
         /// </summary>
         /// <returns>Returns a Boolean value that indicates if any newline characters
@@ -268,5 +282,36 @@ namespace SoftCircuits.Parsing.Helper
         /// character to be extracted.</param>
         /// <returns>Returns the extracted string.</returns>
         public string Extract(int start, int end) => Text.Substring(start, end - start);
+
+    #region Operator overloads
+
+    public static ParsingHelper operator ++(ParsingHelper helper)
+    {
+        helper.Next();
+        return helper;
+    }
+
+    public static ParsingHelper operator --(ParsingHelper helper)
+    {
+        helper.Next(-1);
+        return helper;
+    }
+
+    public static ParsingHelper operator +(ParsingHelper helper, int count)
+    {
+        helper.Next(count);
+        return helper;
+    }
+
+    public static ParsingHelper operator -(ParsingHelper helper, int count)
+    {
+        helper.Next(-count);
+        return helper;
+    }
+
+    public static implicit operator int(ParsingHelper helper) => helper.Index;
+
+    #endregion
+
     }
 }
