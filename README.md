@@ -42,7 +42,7 @@ helper -= 2;         // Same as helper.Next(-2)
 helper = helper + 3; // Same as helper.Next(3)
 helper = helper - 3; // Same as helper.Next(-3)
 int i = helper;      // Same as i = helper.Index
-helper += 1000000;   // Safely moves to the end of the text
+helper += 1000000;   // Safely moves to the end of the text (assuming text less than 1MB)
 helper -= 1000000;   // Safely moves to the start of the text
 ```
 
