@@ -70,7 +70,7 @@ A common task when parsing is to skip over any whitespace characters. The `SkipW
 helper.SkipWhiteSpace();
 ```
 
-Use the `SkipToEndOfLine()` to advance the current position to the first character that is a new-line character (i.e., `'\r'` or `'\n'`). If neither of the characters are found, this method advances to the end of the text and returns `false`.
+Use the `SkipToEndOfLine()` to advance the current position to the first character that is a new-line character (i.e., `'\r'` or `'\n'`). If neither of the characters are found, this method advances to the end of the text and returns `false`. Use the `SkipToNextLine()` to advance the current position to the first character in the next line. If no next line is found, this method advances to the end of the text and returns `false`.
 
 To skip over a group of characters, you can use the `Skip()` method. This method accepts any number of `char` arguments (or a `char` array). It will advance the current position to the first character that is not one of the arguments.
 
