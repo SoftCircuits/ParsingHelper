@@ -161,11 +161,15 @@ namespace SoftCircuits.Parsing.Helper
         /// found.</returns>
         public bool SkipToNextLine()
         {
-            SkipToEndOfLine();
+            // Move to start of next line (if not already at a new line)
+            char c = Peek();
+            if (c != '\r' && c != '\n')
+                SkipToEndOfLine();
+            // Move to end of new line
             if (Peek() == '\r' && Peek(1) == '\n')
                 Next();
             Next();
-            return Index < Text.Length;
+            return !EndOfText;
         }
 
         /// <summary>

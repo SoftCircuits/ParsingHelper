@@ -64,11 +64,22 @@ namespace ParsingHelperTests
             helper.SkipTo("time");
             Assert.AreEqual('t', helper.Peek());
             Assert.IsTrue(helper.MatchesCurrentPosition("time"));
+
+            // New line methods
             helper.SkipToEndOfLine();
             Assert.AreEqual('\r', helper.Peek());
 
             helper.SkipToNextLine();
             Assert.AreEqual('l', helper.Peek());
+
+            helper.Reset();
+            helper.SkipToEndOfLine();
+            Assert.AreEqual('\r', helper.Peek());
+            helper++;   // Within new line
+
+            helper.SkipToNextLine();
+            Assert.AreEqual('l', helper.Peek());
+
             helper.Reset();
             helper.SkipToNextLine();
             Assert.AreEqual('l', helper.Peek());
