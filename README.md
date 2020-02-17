@@ -26,11 +26,11 @@ Use the `Peek()` method to read the character at the current position (without c
 
 The `Text` property returns the string being parsed. And the `Index` property returns the current position within the string being parsed.
 
-The `EndOfText` property returns `true` when you have reached the end of the text. And the `Remaining` property returns the number of characters still to be parsed. (The value returned by `Remaining` is equal `Text.Length - Index`.)
+The `EndOfText` property returns `true` when you have reached the end of the text. And the `Remaining` property returns the number of characters still to be parsed (calculated as `Text.Length - Index`).
 
 ## Navigation
 
-To advance the parser to the next position, use the `Next()` method. The `Next()` method advances the current position to the next character. This method can also accept an optional argument that specifies the number of characters to advance. For example, if you pass `5`, the current position will be advanced five characters. (Calling `Next()` with no arguments is equal to calling `Next(1)`.) The argument to `Next()` can be a negative value if you want to move backwards.
+To advance the parser to the next character position, use the `Next()` method. This method can also accept an optional argument that specifies the number of characters to advance. For example, if you pass `5`, the current position will be advanced five characters. (Calling `Next()` with no arguments is equal to calling `Next(1)`.) The argument to `Next()` can be a negative value if you want to move backwards.
 
 As an alternative to the `Next()` method, `ParserHelper` overloads several operators that can be used as a shortcut to change the current position. These are demonstrated in the following example.
 
@@ -46,11 +46,11 @@ int i = helper;      // Same as i = helper.Index
 // Safely moves to the end of the text if you add a number that is too large
 helper += 1000000;
 
-// Safely moves to the start of the text if you subtract a number that is too large.
+// Safely moves to the start of the text if you subtract a number that is too large
 helper -= 1000000;
 ```
 
-Code to simply print each character in the text being parsed could look something like the following.
+This simple example shows how you might print each character in the text being parsed.
 
 ```cs
 while (!helper.EndOfText)
