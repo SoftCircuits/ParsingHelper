@@ -32,7 +32,7 @@ namespace SoftCircuits.Parsing.Helper
 
 
         /// <summary>
-        /// Constructs a TextParse instance.
+        /// Constructs a ParsingHelper instance.
         /// </summary>
         /// <param name="text">The text to be parsed.</param>
         public ParsingHelper(string text)
@@ -246,21 +246,6 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
-        /// Parses characters until the next character for which <paramref name="predicate"/> returns
-        /// true. If no such characters are found, this method parses all character to the end of the
-        /// input text.
-        /// </summary>
-        /// <param name="predicate">Function that returns true when parsing should stop.</param>
-        /// <returns>A string with the characters parsed.</returns>
-        public string ParseTo(Func<char, bool> predicate)
-        {
-            int start = Index;
-            while (!EndOfText && !predicate(Peek()))
-                Next();
-            return Text.Substring(start, Index - start);
-        }
-
-        /// <summary>
         /// Parses characters until the next character that causes <paramref name="predicate"/> to
         /// return false, and then returns the characters spanned. Can return an empty string.
         /// </summary>
@@ -289,16 +274,17 @@ namespace SoftCircuits.Parsing.Helper
 
         /// <summary>
         /// Parses text using the specified predicate to indicate delimiter characters. Skips any
-        /// characters for which <paramref name="predicate"/> returns true, and then parses any
-        /// characters for which <paramref name="predicate"/> returns false. Returns the parsed
+        /// characters for which <paramref name="predicate"/> returns <c>true</c>, and then parses any
+        /// characters for which <paramref name="predicate"/> returns <c>false</c>. Returns the parsed
         /// characters.
         /// </summary>
-        /// <param name="predicate">Function that returns true for token delimiter characters.</param>
+        /// <param name="predicate">Function that returns <c>true</c> for token delimiter
+        /// characters.</param>
         /// <returns>Returns the parsed token.</returns>
         public string ParseToken(Func<char, bool> predicate)
         {
             SkipWhile(predicate);
-            return ParseTo(predicate);
+            return ParseWhile(c => !predicate(c));
         }
 
         /// <summary>
@@ -317,9 +303,8 @@ namespace SoftCircuits.Parsing.Helper
             StringBuilder builder = new StringBuilder();
             while (!EndOfText)
             {
-                int start = Index;
                 // Parse to next quote
-                builder.Append(ParseWhile(c => c != quote));
+                builder.Append(ParseTo(quote));
                 // Skip quote
                 Next();
                 // Two consecutive quotes treated as quote literal

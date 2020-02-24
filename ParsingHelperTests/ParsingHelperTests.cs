@@ -2,10 +2,10 @@
 // Licensed under the MIT license.
 //
 
-using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Linq;
 using SoftCircuits.Parsing.Helper;
+using System;
+using System.Linq;
 
 namespace ParsingHelperTests
 {
@@ -62,7 +62,7 @@ people, for the people, shall not perish from the earth.";
             helper.Next(-10000);
             Assert.AreEqual(0, helper.Index);
             Assert.AreEqual(false, helper.EndOfText);
-            Assert.AreEqual(helper.Text.Length - helper.Index, helper.Remaining);
+            Assert.AreEqual(helper.Text.Length, helper.Remaining);
 
             helper.Next(10000);
             Assert.AreEqual(helper.Text.Length, helper.Index);
@@ -219,7 +219,7 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
         }
 
         [TestMethod]
-        public void OperatorOverloadTest()
+        public void OperatorOverloadTests()
         {
             ParsingHelper helper = new ParsingHelper(TestString);
 
