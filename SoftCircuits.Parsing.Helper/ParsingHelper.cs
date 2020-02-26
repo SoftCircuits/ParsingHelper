@@ -3,6 +3,7 @@
 //
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -13,10 +14,12 @@ namespace SoftCircuits.Parsing.Helper
     /// </summary>
     public class ParsingHelper
     {
+        private static readonly char[] NewLineChars = { '\r', '\n' };
+
         /// <summary>
-        /// Represents a non-valid character. This character is returned when a valid character
-        /// is not available, such as when returning a character beyond the end of the text.
-        /// The character is represented as <c>'\0'</c>.
+        /// Represents a invalid character. This character is returned when a valid character
+        /// is not available, such as when attempting to access a character that is
+        /// out-of-bounds. The character is represented as <c>'\0'</c>.
         /// </summary>
         public const char NullChar = '\0';
 
@@ -61,13 +64,13 @@ namespace SoftCircuits.Parsing.Helper
         /// <summary>
         /// Indicates if the current position is at the end of the text being parsed.
         /// </summary>
-        public bool EndOfText => Index >= Text.Length;
+        public bool EndOfText => (Index >= Text.Length);
 
         /// <summary>
         /// Returns the number of characters not yet parsed. This is equal to the length of the
         /// text being parsed minus the current position within that text.
         /// </summary>
-        public int Remaining => Text.Length - Index;
+        public int Remaining => (Text.Length - Index);
 
         /// <summary>
         /// Returns the character at the current position, or <see cref="NullChar"></see> if
@@ -76,7 +79,8 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>The character at the current position.</returns>
         public char Peek()
         {
-            return (Index >= 0 && Index < Text.Length) ? Text[Index] : NullChar;
+            Debug.Assert(Index >= 0);
+            return (Index < Text.Length) ? Text[Index] : NullChar;
         }
 
         /// <summary>
@@ -88,8 +92,8 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>The character at the specified position.</returns>
         public char Peek(int count)
         {
-            int pos = (Index + count);
-            return (pos >= 0 && pos < Text.Length) ? Text[pos] : NullChar;
+            int index = (Index + count);
+            return (index >= 0 && index < Text.Length) ? Text[index] : NullChar;
         }
 
         /// <summary>
@@ -97,6 +101,7 @@ namespace SoftCircuits.Parsing.Helper
         /// </summary>
         public void Next()
         {
+            Debug.Assert(Index >= 0);
             if (Index < Text.Length)
                 Index++;
         }
@@ -155,8 +160,6 @@ namespace SoftCircuits.Parsing.Helper
             return true;
         }
 
-        private static readonly char[] NewLineChars = { '\r', '\n' };
-
         /// <summary>
         /// Moves the current position forward to the start of the next line.
         /// </summary>
@@ -172,7 +175,7 @@ namespace SoftCircuits.Parsing.Helper
             if (Peek() == NewLineChars[0] && Peek(1) == NewLineChars[1])
                 Next();
             Next();
-            return !EndOfText;
+            return (Index < Text.Length);
         }
 
         /// <summary>
@@ -379,24 +382,38 @@ namespace SoftCircuits.Parsing.Helper
 
         public static implicit operator int(ParsingHelper helper) => helper.Index;
 
+        /// <summary>
+        /// Move the current position ahead one character.
+        /// </summary>
         public static ParsingHelper operator ++(ParsingHelper helper)
         {
             helper.Next(1);
             return helper;
         }
 
+        /// <summary>
+        /// Move the current position back one character.
+        /// </summary>
         public static ParsingHelper operator --(ParsingHelper helper)
         {
             helper.Next(-1);
             return helper;
         }
 
+        /// <summary>
+        /// Moves the current position ahead (or back) by the specified
+        /// number of characters.
+        /// </summary>
         public static ParsingHelper operator +(ParsingHelper helper, int count)
         {
             helper.Next(count);
             return helper;
         }
 
+        /// <summary>
+        /// Moves the current position back (or ahead) by the specified
+        /// number of characters.
+        /// </summary>
         public static ParsingHelper operator -(ParsingHelper helper, int count)
         {
             helper.Next(-count);

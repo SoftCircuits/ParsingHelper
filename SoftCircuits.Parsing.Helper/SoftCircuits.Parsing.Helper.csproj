@@ -7,7 +7,7 @@
     <Product>ParsingHelper</Product>
     <Copyright>Copyright © 2019-2020 SoftCircuits</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <PackageReleaseNotes>1.0.8; Optimized MatchesCurrentPosition() and added overloaded version after running various performance tests using different compare methods.</PackageReleaseNotes>
+    <PackageReleaseNotes>1.0.9; Several minor optimizations; Improved XML comments; reworked icon.</PackageReleaseNotes>
     <PackageTags>parse parser parsing text-parsing parsing-helper .net csharp tokenizer</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/SoftCircuits/ParsingHelper</RepositoryUrl>
@@ -15,7 +15,7 @@
     <Description>.NET class library that aids in parsing text. Tracks your current position within the text being parsed, ensures you don't access characters that are out of bounds of the string being parsed, and includes methods that make parsing easier. Use this library to make your parsing code cleaner and more reliable.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Version>1.0.8</Version>
+    <Version>1.0.9</Version>
     <PackageProjectUrl>https://github.com/SoftCircuits/ParsingHelper</PackageProjectUrl>
     <PackageIcon>Logo_64x64.png</PackageIcon>
     <PackageIconUrl />
