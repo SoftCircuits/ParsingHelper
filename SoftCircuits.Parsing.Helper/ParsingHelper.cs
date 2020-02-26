@@ -319,17 +319,42 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
-        /// Compares the given string to text at the current position.
+        /// Compares the given string to text at the current position using a case-sensitive comparison.
         /// </summary>
+        /// <remarks>Testing showed this is the fastest way to compare part of a string. Faster even
+        /// than using Span&lt;T&gt;.</remarks>
+        /// <param name="s">String to compare.</param>
+        /// <returns>Returns <c>true</c> if the given string matches the text at the current position.
+        /// Returns false otherwise.</returns>
+        public bool MatchesCurrentPosition(string s)
+        {
+            if (s == null || s.Length == 0 || Remaining < s.Length)
+                return false;
+
+            for (int i = 0; i < s.Length; i++)
+            {
+                if (s[i] != Text[Index + i])
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Compares the given string to text at the current position using the specified comparison.
+        /// This method is not as fast as <see cref="MatchesCurrentPosition(string)"></see>. Use this
+        /// method when you need a non-ordinal comparison.
+        /// </summary>
+        /// <remarks>Testing showed even this method was a little faster than using Span&lt;T&gt;,
+        /// although clearly not as fast as <see cref="MatchesCurrentPosition(string)"></see>.</remarks>
         /// <param name="s">String to compare.</param>
         /// <param name="comparison">Type of string comparison to use.</param>
         /// <returns>Returns <c>true</c> if the given string matches the text at the current position.
         /// Returns false otherwise.</returns>
-        public bool MatchesCurrentPosition(string s, StringComparison comparison = StringComparison.Ordinal)
+        public bool MatchesCurrentPosition(string s, StringComparison comparison)
         {
-            // TODO: Can we rewrite to use ReadOnlySpan<char> when available?
             if (s == null || s.Length == 0 || Remaining < s.Length)
                 return false;
+
             return s.Equals(Text.Substring(Index, s.Length), comparison);
         }
 

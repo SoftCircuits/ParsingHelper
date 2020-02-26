@@ -197,6 +197,8 @@ people, for the people, shall not perish from the earth.";
             helper.SkipTo("consecrated it");
             Assert.AreEqual(true, helper.MatchesCurrentPosition("consecrated it"));
             Assert.AreEqual(true, helper.MatchesCurrentPosition("CONSECRATED IT", StringComparison.OrdinalIgnoreCase));
+            Assert.AreEqual(false, helper.MatchesCurrentPosition("consecrated_it"));
+            Assert.AreEqual(false, helper.MatchesCurrentPosition("CONSECRATED_IT", StringComparison.OrdinalIgnoreCase));
         }
 
         [TestMethod]
