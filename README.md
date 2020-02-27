@@ -24,7 +24,7 @@ You can call the `Reset()` method to reset the current position back to the star
 
 Use the `Peek()` method to read the character at the current position (without changing the current position). The `Peek()` method can optionally accept an integer argument that specifies the character position as the number of characters ahead of the current position. For example, `Peek(1)` would return the character that comes after the character at the current position. (Calling `Peek()` is equal to calling `Peek(0)`.) If the position specified is out of bounds for the current string, `Peek()` returns  `ParsingHelper.NullChar` (equal to `'\0'`).
 
-The `Text` property returns the string being parsed. And the `Index` property returns the current position within the string being parsed.
+The `Text` property returns the string being parsed. And the `Index` property returns the current position within the string being parsed. Although you would normally use the navigation methods to change the `Index` value, you can set it directly. If you set the `Index` property an invalid value, it will be adjusted so it is always in the range of 0 to `Text.Length`.
 
 The `EndOfText` property returns `true` when you have reached the end of the text. And the `Remaining` property returns the number of characters still to be parsed (calculated as `Text.Length - Index`).
 
@@ -98,7 +98,9 @@ The `SkipWhile()` method accepts a predicate that specifies when this method sho
 helper.SkipWhile(c => c != '=');
 ```
 
-For another example, see how `SkipWhile()` is used to implement the `SkipWhiteSpace()` method.
+A common task when parsing is to skip over any whitespace characters. Use the `SkipWhiteSpace()` method to advance the current position to the next character that is not a white space character.
+
+For another example of `SkipWhile()`, here's how it is used to implement the `SkipWhiteSpace()` method.
 
 ```cs
 public void SkipWhiteSpace()
@@ -106,8 +108,6 @@ public void SkipWhiteSpace()
     SkipWhile(char.IsWhiteSpace);
 }
 ```
-
-A common task when parsing is to skip over any whitespace characters. Use the `SkipWhiteSpace()` method to advance the current position to the next character that is not a white space character.
 
 ## Parsing Characters
 
@@ -118,6 +118,8 @@ The following example will parse all letters starting from the current position.
 ```cs
 string token = helper.ParseWhile(char.IsLetter);
 ```
+
+The `ParseTo()` method parses characters until a delimiter character is found, and returns the characters that were parsed. There are two versions of this method: one takes a `param` array of characters that specify the delimiters, and the other accepts a predicate that returns true for characters that are delimiters.
 
 In addition, the library also defines the `ParseToken()` method. This method takes a list of delimiters and will skip all characters that are a delimiter, then parse all characters that are not a delimiter and return the parsed characters. Delimiters can be specified as character parameters, a character array, or a predicate that returns true if the given character is a delimiter.
 
