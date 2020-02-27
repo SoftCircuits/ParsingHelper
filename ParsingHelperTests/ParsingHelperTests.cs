@@ -69,6 +69,16 @@ people, for the people, shall not perish from the earth.";
             Assert.AreEqual(true, helper.EndOfText);
             Assert.AreEqual(0, helper.Remaining);
 
+            helper.Index = -10000;
+            Assert.AreEqual(0, helper.Index);
+            Assert.AreEqual(false, helper.EndOfText);
+            Assert.AreEqual(helper.Text.Length, helper.Remaining);
+
+            helper.Index = 10000;
+            Assert.AreEqual(helper.Text.Length, helper.Index);
+            Assert.AreEqual(true, helper.EndOfText);
+            Assert.AreEqual(0, helper.Remaining);
+
             helper.Reset();
             Assert.AreEqual(0, helper.Index);
             Assert.AreEqual(Alphabet, helper.Text);

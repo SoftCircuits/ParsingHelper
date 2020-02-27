@@ -15,6 +15,7 @@ namespace SoftCircuits.Parsing.Helper
     public class ParsingHelper
     {
         private static readonly char[] NewLineChars = { '\r', '\n' };
+        private int InternalIndex;
 
         /// <summary>
         /// Represents a invalid character. This character is returned when a valid character
@@ -31,7 +32,18 @@ namespace SoftCircuits.Parsing.Helper
         /// <summary>
         /// Returns the current position within the text being parsed.
         /// </summary>
-        public int Index { get; private set; }
+        public int Index
+        {
+            get => InternalIndex;
+            set
+            {
+                InternalIndex = value;
+                if (InternalIndex < 0)
+                    InternalIndex = 0;
+                else if (InternalIndex > Text.Length)
+                    InternalIndex = Text.Length;
+            }
+        }
 
 
         /// <summary>
@@ -48,7 +60,7 @@ namespace SoftCircuits.Parsing.Helper
         /// </summary>
         public void Reset()
         {
-            Index = 0;
+            InternalIndex = 0;
         }
 
         /// <summary>
@@ -58,19 +70,19 @@ namespace SoftCircuits.Parsing.Helper
         public void Reset(string text)
         {
             Text = text ?? string.Empty;
-            Index = 0;
+            InternalIndex = 0;
         }
 
         /// <summary>
         /// Indicates if the current position is at the end of the text being parsed.
         /// </summary>
-        public bool EndOfText => (Index >= Text.Length);
+        public bool EndOfText => (InternalIndex >= Text.Length);
 
         /// <summary>
         /// Returns the number of characters not yet parsed. This is equal to the length of the
         /// text being parsed minus the current position within that text.
         /// </summary>
-        public int Remaining => (Text.Length - Index);
+        public int Remaining => (Text.Length - InternalIndex);
 
         /// <summary>
         /// Returns the character at the current position, or <see cref="NullChar"></see> if
@@ -79,8 +91,8 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>The character at the current position.</returns>
         public char Peek()
         {
-            Debug.Assert(Index >= 0);
-            return (Index < Text.Length) ? Text[Index] : NullChar;
+            Debug.Assert(InternalIndex >= 0);
+            return (InternalIndex < Text.Length) ? Text[InternalIndex] : NullChar;
         }
 
         /// <summary>
@@ -92,7 +104,7 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>The character at the specified position.</returns>
         public char Peek(int count)
         {
-            int index = (Index + count);
+            int index = (InternalIndex + count);
             return (index >= 0 && index < Text.Length) ? Text[index] : NullChar;
         }
 
@@ -101,9 +113,9 @@ namespace SoftCircuits.Parsing.Helper
         /// </summary>
         public void Next()
         {
-            Debug.Assert(Index >= 0);
-            if (Index < Text.Length)
-                Index++;
+            Debug.Assert(InternalIndex >= 0);
+            if (InternalIndex < Text.Length)
+                InternalIndex++;
         }
 
         /// <summary>
@@ -113,11 +125,11 @@ namespace SoftCircuits.Parsing.Helper
         /// to move back.</param>
         public void Next(int count)
         {
-            Index += count;
-            if (Index < 0)
-                Index = 0;
-            else if (Index > Text.Length)
-                Index = Text.Length;
+            InternalIndex += count;
+            if (InternalIndex < 0)
+                InternalIndex = 0;
+            else if (InternalIndex > Text.Length)
+                InternalIndex = Text.Length;
         }
 
         /// <summary>
@@ -132,10 +144,10 @@ namespace SoftCircuits.Parsing.Helper
         /// were found.</returns>
         public bool SkipTo(string s, StringComparison comparison = StringComparison.Ordinal)
         {
-            Index = Text.IndexOf(s, Index, comparison);
-            if (Index == -1)
+            InternalIndex = Text.IndexOf(s, InternalIndex, comparison);
+            if (InternalIndex == -1)
             {
-                Index = Text.Length;
+                InternalIndex = Text.Length;
                 return false;
             }
             return true;
@@ -151,10 +163,10 @@ namespace SoftCircuits.Parsing.Helper
         /// were found.</returns>
         public bool SkipTo(params char[] chars)
         {
-            Index = Text.IndexOfAny(chars, Index);
-            if (Index == -1)
+            InternalIndex = Text.IndexOfAny(chars, InternalIndex);
+            if (InternalIndex == -1)
             {
-                Index = Text.Length;
+                InternalIndex = Text.Length;
                 return false;
             }
             return true;
@@ -175,7 +187,7 @@ namespace SoftCircuits.Parsing.Helper
             if (Peek() == NewLineChars[0] && Peek(1) == NewLineChars[1])
                 Next();
             Next();
-            return (Index < Text.Length);
+            return (InternalIndex < Text.Length);
         }
 
         /// <summary>
@@ -225,11 +237,11 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>A string with the characters parsed.</returns>
         public string ParseTo(string s, StringComparison comparison = StringComparison.Ordinal)
         {
-            int start = Index;
-            Index = Text.IndexOf(s, Index, comparison);
-            if (Index == -1)
-                Index = Text.Length;
-            return Text.Substring(start, Index - start);
+            int start = InternalIndex;
+            InternalIndex = Text.IndexOf(s, InternalIndex, comparison);
+            if (InternalIndex == -1)
+                InternalIndex = Text.Length;
+            return Extract(start, InternalIndex);
         }
 
         /// <summary>
@@ -241,11 +253,11 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>A string with the characters parsed.</returns>
         public string ParseTo(params char[] chars)
         {
-            int start = Index;
-            Index = Text.IndexOfAny(chars, Index);
-            if (Index == -1)
-                Index = Text.Length;
-            return Text.Substring(start, Index - start);
+            int start = InternalIndex;
+            InternalIndex = Text.IndexOfAny(chars, InternalIndex);
+            if (InternalIndex == -1)
+                InternalIndex = Text.Length;
+            return Extract(start, InternalIndex);
         }
 
         /// <summary>
@@ -256,10 +268,10 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>A string with the characters parsed.</returns>
         public string ParseWhile(Func<char, bool> predicate)
         {
-            int start = Index;
+            int start = InternalIndex;
             while (!EndOfText && predicate(Peek()))
                 Next();
-            return Text.Substring(start, Index - start);
+            return Extract(start, InternalIndex);
         }
 
         /// <summary>
@@ -336,7 +348,7 @@ namespace SoftCircuits.Parsing.Helper
 
             for (int i = 0; i < s.Length; i++)
             {
-                if (s[i] != Text[Index + i])
+                if (s[i] != Text[InternalIndex + i])
                     return false;
             }
             return true;
@@ -358,7 +370,7 @@ namespace SoftCircuits.Parsing.Helper
             if (s == null || s.Length == 0 || Remaining < s.Length)
                 return false;
 
-            return s.Equals(Text.Substring(Index, s.Length), comparison);
+            return s.Equals(Text.Substring(InternalIndex, s.Length), comparison);
         }
 
         /// <summary>
@@ -367,7 +379,7 @@ namespace SoftCircuits.Parsing.Helper
         /// </summary>
         /// <param name="start">0-based position of first character to be extracted.</param>
         /// <returns>Returns the extracted string.</returns>
-        public string Extract(int start) => Text.Substring(start, Text.Length - start);
+        public string Extract(int start) => Text.Substring(start);
 
         /// <summary>
         /// Extracts a substring from the specified range of the text being parsed.
@@ -380,7 +392,7 @@ namespace SoftCircuits.Parsing.Helper
 
         #region Operator overloads
 
-        public static implicit operator int(ParsingHelper helper) => helper.Index;
+        public static implicit operator int(ParsingHelper helper) => helper.InternalIndex;
 
         /// <summary>
         /// Move the current position ahead one character.
