@@ -14,8 +14,8 @@ namespace SoftCircuits.Parsing.Helper
     /// </summary>
     public class ParsingHelper
     {
-        private static readonly char[] NewLineChars = { '\r', '\n' };
         private int InternalIndex;
+        private static readonly char[] NewLineChars = { '\r', '\n' };
 
         /// <summary>
         /// Represents a invalid character. This character is returned when a valid character
@@ -30,7 +30,7 @@ namespace SoftCircuits.Parsing.Helper
         public string Text { get; private set; }
 
         /// <summary>
-        /// Returns the current position within the text being parsed.
+        /// Sets or gets the current position within the text being parsed.
         /// </summary>
         public int Index
         {
@@ -44,7 +44,6 @@ namespace SoftCircuits.Parsing.Helper
                     InternalIndex = Text.Length;
             }
         }
-
 
         /// <summary>
         /// Constructs a ParsingHelper instance.
@@ -179,11 +178,9 @@ namespace SoftCircuits.Parsing.Helper
         /// found.</returns>
         public bool SkipToNextLine()
         {
-            // Move to start of next new line (if not already at a new line)
-            char c = Peek();
-            if (c != NewLineChars[0] && c != NewLineChars[1])
-                SkipToEndOfLine();
-            // Move to end of new line
+            // Move to start of next line break
+            SkipToEndOfLine();
+            // Move to end of line break (start of next line)
             if (Peek() == NewLineChars[0] && Peek(1) == NewLineChars[1])
                 Next();
             Next();
