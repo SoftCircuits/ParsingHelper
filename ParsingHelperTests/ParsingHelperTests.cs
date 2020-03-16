@@ -12,9 +12,8 @@ namespace ParsingHelperTests
     [TestClass]
     public class ParsingHelperTests
     {
-        private const string Alphabet = "Abcdefghijklmnopqrstuvwxyz";
-        private const string Numbers = "1234567890";
-        private const string TestString = @"Four score and seven years ago our fathers brought forth on this continent,
+        private const string ShortTest = "Four score and seven years ago";
+        private const string LongTest = @"Four score and seven years ago our fathers brought forth on this continent,
 a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal.
 
 Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived and so
@@ -35,167 +34,183 @@ people, for the people, shall not perish from the earth.";
         [TestMethod]
         public void BasicTests()
         {
-            ParsingHelper helper = new ParsingHelper(Alphabet);
+            ParsingHelper helper = new ParsingHelper(ShortTest);
 
+            // Initial state
             Assert.AreEqual('\0', ParsingHelper.NullChar);
-            Assert.AreEqual(Alphabet, helper.Text);
+            Assert.AreEqual(ShortTest, helper.Text);
             Assert.AreEqual(0, helper.Index);
+            Assert.AreEqual(false, helper.EndOfText);
+            Assert.AreEqual(ShortTest.Length, helper.Remaining);
 
-            Assert.AreEqual('A', helper.Peek());
-            Assert.AreEqual('b', helper.Peek(1));
+            // Peek
+            Assert.AreEqual('F', helper.Peek());
+            Assert.AreEqual('o', helper.Peek(1));
+            Assert.AreEqual('u', helper.Peek(2));
+            Assert.AreEqual('r', helper.Peek(3));
             Assert.AreEqual(ParsingHelper.NullChar, helper.Peek(1000));
-            Assert.AreEqual(0, helper.Index);
+            Assert.AreEqual(ParsingHelper.NullChar, helper.Peek(-1000));
+            Assert.AreEqual(0, helper.Index);   // Index didn't change
 
+            // Next
             helper.Next();
             Assert.AreEqual(1, helper.Index);
-            Assert.AreEqual('b', helper.Peek());
+            Assert.AreEqual('o', helper.Peek());
             helper.Next(2);
             Assert.AreEqual(3, helper.Index);
-            Assert.AreEqual('d', helper.Peek());
+            Assert.AreEqual('r', helper.Peek());
             helper.Next(-2);
             Assert.AreEqual(1, helper.Index);
-            Assert.AreEqual('b', helper.Peek());
-
+            Assert.AreEqual('o', helper.Peek());
             Assert.AreEqual(false, helper.EndOfText);
-            Assert.AreEqual(helper.Text.Length - helper.Index, helper.Remaining);
-
-            helper.Next(-10000);
-            Assert.AreEqual(0, helper.Index);
-            Assert.AreEqual(false, helper.EndOfText);
-            Assert.AreEqual(helper.Text.Length, helper.Remaining);
+            Assert.AreEqual(ShortTest.Length - helper.Index, helper.Remaining);
 
             helper.Next(10000);
             Assert.AreEqual(helper.Text.Length, helper.Index);
             Assert.AreEqual(true, helper.EndOfText);
             Assert.AreEqual(0, helper.Remaining);
+            helper.Next(-10000);
+            Assert.AreEqual(0, helper.Index);
+            Assert.AreEqual(false, helper.EndOfText);
+            Assert.AreEqual(ShortTest.Length, helper.Remaining);
 
+            helper.Index = 10000;
+            Assert.AreEqual(ShortTest.Length, helper.Index);
+            Assert.AreEqual(true, helper.EndOfText);
+            Assert.AreEqual(0, helper.Remaining);
             helper.Index = -10000;
             Assert.AreEqual(0, helper.Index);
             Assert.AreEqual(false, helper.EndOfText);
-            Assert.AreEqual(helper.Text.Length, helper.Remaining);
+            Assert.AreEqual(ShortTest.Length, helper.Remaining);
 
-            helper.Index = 10000;
+            helper.Index = 0;
+            Assert.AreEqual(0, helper.Index);
+            Assert.AreEqual(ShortTest.Length, helper.Remaining);
+            Assert.AreEqual(false, helper.EndOfText);
+            helper.Index = helper.Text.Length;
             Assert.AreEqual(helper.Text.Length, helper.Index);
-            Assert.AreEqual(true, helper.EndOfText);
             Assert.AreEqual(0, helper.Remaining);
+            Assert.AreEqual(true, helper.EndOfText);
+            helper.Index = 5;
+            Assert.AreEqual(5, helper.Index);
+            Assert.AreEqual(ShortTest.Length - 5, helper.Remaining);
+            Assert.AreEqual(false, helper.EndOfText);
 
             helper.Reset();
             Assert.AreEqual(0, helper.Index);
-            Assert.AreEqual(Alphabet, helper.Text);
-
-            helper.Reset(Numbers);
-            Assert.AreEqual(Numbers, helper.Text);
-            Assert.AreEqual('1', helper.Peek());
-            Assert.AreEqual('2', helper.Peek(1));
-            Assert.AreEqual(ParsingHelper.NullChar, helper.Peek(1000));
-            Assert.AreEqual(0, helper.Index);
+            Assert.AreEqual(ShortTest, helper.Text);
 
             helper.Reset(null);
             Assert.AreEqual(0, helper.Index);
             Assert.AreEqual(string.Empty, helper.Text);
+            Assert.AreEqual(true, helper.EndOfText);
+            Assert.AreEqual(0, helper.Remaining);
         }
 
         [TestMethod]
         public void SkipTests()
         {
-            ParsingHelper helper = new ParsingHelper(TestString);
+            ParsingHelper helper = new ParsingHelper(LongTest);
 
-            helper.SkipTo("score");
+            // SkipTo
+            Assert.IsTrue(helper.SkipTo("score"));
             Assert.AreEqual('s', helper.Peek());
-
+            Assert.AreEqual('c', helper.Peek(1));
             helper.Reset();
-            helper.SkipTo("SCORE", StringComparison.OrdinalIgnoreCase);
+            Assert.IsTrue(helper.SkipTo("SCORE", StringComparison.OrdinalIgnoreCase));
             Assert.AreEqual('s', helper.Peek());
-
+            Assert.AreEqual('c', helper.Peek(1));
             helper.Reset();
-            helper.SkipTo('v');
+            Assert.IsTrue(helper.SkipTo('v'));
             Assert.AreEqual('v', helper.Peek());
             Assert.AreEqual('e', helper.Peek(1));
-            Assert.AreEqual('n', helper.Peek(2));
-
-            helper.SkipToNextLine();
-            Assert.AreEqual('a', helper.Peek());
-            Assert.AreEqual(' ', helper.Peek(1));
-
-            helper.SkipToEndOfLine();
-            Assert.AreEqual('\r', helper.Peek());
-            Assert.AreEqual('\n', helper.Peek(1));
-
-            helper.SkipTo("XxXxXxX");
-            Assert.AreEqual(helper.Text.Length, helper.Index);
+            Assert.IsFalse(helper.SkipTo("XxXxXxX"));
+            Assert.AreEqual(LongTest.Length, helper.Index);
             Assert.AreEqual(true, helper.EndOfText);
+            Assert.AreEqual(0, helper.Remaining);
 
+            // SkipWhiteSpace
             helper.Reset();
-            helper.SkipTo(' ');
+            Assert.IsTrue(helper.SkipTo(' '));
             helper.SkipWhiteSpace();
             Assert.AreEqual('s', helper.Peek());
 
+            // SkipWhile
             helper.SkipWhile(c => "score".Contains(c));
             Assert.AreEqual(' ', helper.Peek());
             Assert.AreEqual('a', helper.Peek(1));
+
+            // SkipToNextLine/SkipToEndOfLine
+            helper.Reset();
+            helper.SkipToEndOfLine();
+            Assert.AreEqual('\r', helper.Peek());
+            Assert.AreEqual('\n', helper.Peek(1));
+            helper.SkipToNextLine();
+            Assert.AreEqual('a', helper.Peek());
+            Assert.AreEqual(' ', helper.Peek(1));
+            helper.SkipToNextLine();
+            helper.SkipToNextLine();
+            Assert.AreEqual('N', helper.Peek());
+            Assert.AreEqual('o', helper.Peek(1));
+
+            // Skip
+            helper.Skip('N', 'o', 'w', ' ', 'e');
+            Assert.AreEqual('a', helper.Peek());
+            Assert.AreEqual('r', helper.Peek(1));
         }
 
         [TestMethod]
         public void ParseTests()
         {
-            ParsingHelper helper = new ParsingHelper(TestString);
+            ParsingHelper helper = new ParsingHelper(LongTest);
 
-            helper.SkipTo("score");
-            string s = helper.ParseTo("fathers");
+            Assert.IsTrue(helper.SkipTo("score"));
+            Assert.AreEqual("score and seven years ago our ", helper.ParseTo("fathers"));
             Assert.AreEqual('f', helper.Peek());
-            Assert.AreEqual("score and seven years ago our ", s);
 
             helper.Reset();
-            helper.SkipTo("score");
-            s = helper.ParseTo("FATHERS", StringComparison.OrdinalIgnoreCase);
+            Assert.IsTrue(helper.SkipTo("score"));
+            Assert.AreEqual("score and seven years ago our ", helper.ParseTo("FATHERS", StringComparison.OrdinalIgnoreCase));
             Assert.AreEqual('f', helper.Peek());
-            Assert.AreEqual("score and seven years ago our ", s);
 
             helper.Reset();
-            helper.SkipTo("score");
-            s = helper.ParseTo('v', 'X', 'Y', 'Z');
+            Assert.IsTrue(helper.SkipTo("score"));
+            Assert.AreEqual("score and se", helper.ParseTo('v', 'X', 'Y', 'Z'));
             Assert.AreEqual('v', helper.Peek());
-            Assert.AreEqual("score and se", s);
 
             helper.Reset();
-            helper.SkipTo("score");
-            s = helper.ParseWhile(c => c != ',');
+            Assert.IsTrue(helper.SkipTo("score"));
+            Assert.AreEqual("score and seven years ago our fathers brought forth on this continent", helper.ParseWhile(c => c != ','));
             Assert.AreEqual(',', helper.Peek());
-            Assert.AreEqual("score and seven years ago our fathers brought forth on this continent", s);
 
             helper.Next();  // Skip comma
-            s = helper.ParseToken(char.IsWhiteSpace);
+            Assert.AreEqual("a", helper.ParseToken(char.IsWhiteSpace));
             Assert.AreEqual(' ', helper.Peek());
             Assert.AreEqual('n', helper.Peek(1));
-            Assert.AreEqual("a", s);
 
             helper.Reset();
-            s = helper.ParseToken(' ', '\r', '\n');
+            Assert.AreEqual("Four", helper.ParseToken(' ', '\r', '\n'));
             Assert.AreEqual(' ', helper.Peek());
-            Assert.AreEqual("Four", s);
         }
 
         [TestMethod]
         public void QuotedTextTests()
         {
             ParsingHelper helper = new ParsingHelper("He turned and said, \"Yes.\"");
-            helper.SkipTo('"');
-            string s = helper.ParseQuotedText();
-            Assert.AreEqual("Yes.", s);
+            Assert.IsTrue(helper.SkipTo('"'));
+            Assert.AreEqual("Yes.", helper.ParseQuotedText());
             Assert.AreEqual(helper.Text.Length, helper.Index);
             Assert.AreEqual(ParsingHelper.NullChar, helper.Peek());
 
             helper = new ParsingHelper("He turned and said, \"I turned and said, \"\"Yes\"\".\"");
-            helper.SkipTo('"');
-            s = helper.ParseQuotedText();
-            Assert.AreEqual("I turned and said, \"Yes\".", s);
+            Assert.IsTrue(helper.SkipTo('"'));
+            Assert.AreEqual("I turned and said, \"Yes\".", helper.ParseQuotedText());
             Assert.AreEqual(helper.Text.Length, helper.Index);
             Assert.AreEqual(ParsingHelper.NullChar, helper.Peek());
 
             helper = new ParsingHelper("He turned and said, 'I turned and said, ''Yes''.'");
-            helper.SkipTo('\'');
-            s = helper.ParseQuotedText();
-            Assert.AreEqual("I turned and said, 'Yes'.", s);
+            Assert.IsTrue(helper.SkipTo('\''));
+            Assert.AreEqual("I turned and said, 'Yes'.", helper.ParseQuotedText());
             Assert.AreEqual(helper.Text.Length, helper.Index);
             Assert.AreEqual(ParsingHelper.NullChar, helper.Peek());
         }
@@ -203,8 +218,8 @@ people, for the people, shall not perish from the earth.";
         [TestMethod]
         public void MatchesCurrentPositionTests()
         {
-            ParsingHelper helper = new ParsingHelper(TestString);
-            helper.SkipTo("consecrated it");
+            ParsingHelper helper = new ParsingHelper(LongTest);
+            Assert.IsTrue(helper.SkipTo("consecrated it"));
             Assert.AreEqual(true, helper.MatchesCurrentPosition("consecrated it"));
             Assert.AreEqual(true, helper.MatchesCurrentPosition("CONSECRATED IT", StringComparison.OrdinalIgnoreCase));
             Assert.AreEqual(false, helper.MatchesCurrentPosition("consecrated_it"));
@@ -214,9 +229,9 @@ people, for the people, shall not perish from the earth.";
         [TestMethod]
         public void ExtractTests()
         {
-            ParsingHelper helper = new ParsingHelper(TestString);
+            ParsingHelper helper = new ParsingHelper(LongTest);
             string s = "consecrated it";
-            helper.SkipTo(s);
+            Assert.IsTrue(helper.SkipTo(s));
             int start = helper.Index;
             helper.Next(s.Length);
             Assert.AreEqual(s, helper.Extract(start, helper.Index));
@@ -233,31 +248,29 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
         [TestMethod]
         public void OperatorOverloadTests()
         {
-            ParsingHelper helper = new ParsingHelper(TestString);
+            ParsingHelper helper = new ParsingHelper(LongTest);
 
-            int i = 0;
-            while (!helper.EndOfText)
+            for (int i = 0; !helper.EndOfText; i++, helper++)
             {
-                Assert.AreEqual(i++, helper.Index);
-                helper++;
+                Assert.AreEqual(i, helper.Index);
+                Assert.AreEqual(LongTest[i], helper.Peek());
             }
 
             helper.Reset();
             helper++;
             Assert.AreEqual(1, helper);
-
+            helper += 2;
+            Assert.AreEqual(3, helper);
+            helper = helper + 2;
+            Assert.AreEqual(5, helper);
+            helper -= 2;
+            Assert.AreEqual(3, helper);
+            helper = helper - 2;
+            Assert.AreEqual(1, helper);
             helper--;
             Assert.AreEqual(0, helper);
-
-            helper += 2;
-            Assert.AreEqual(2, helper);
-
-            helper = helper + 2;
-            Assert.AreEqual(4, helper);
-
             helper += 10000;
-            Assert.AreEqual(helper.Text.Length, helper);
-
+            Assert.AreEqual(LongTest.Length, helper);
             helper -= 10000;
             Assert.AreEqual(0, helper);
         }

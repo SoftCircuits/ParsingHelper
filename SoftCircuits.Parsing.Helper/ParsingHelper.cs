@@ -14,23 +14,23 @@ namespace SoftCircuits.Parsing.Helper
     /// </summary>
     public class ParsingHelper
     {
-        private int InternalIndex;
         private static readonly char[] NewLineChars = { '\r', '\n' };
+        private int InternalIndex;
 
         /// <summary>
-        /// Represents a invalid character. This character is returned when a valid character
-        /// is not available, such as when attempting to access a character that is
-        /// out-of-bounds. The character is represented as <c>'\0'</c>.
+        /// Represents a invalid character. This character is returned when attempting
+        /// to read an out-of-range character. The character is represented as
+        /// <c>'\0'</c>.
         /// </summary>
         public const char NullChar = '\0';
 
         /// <summary>
-        /// Returns the current text being parsed.
+        /// Returns the text currently being parsed.
         /// </summary>
         public string Text { get; private set; }
 
         /// <summary>
-        /// Sets or gets the current position within the text being parsed.
+        /// Sets or gets the current position within the input text.
         /// </summary>
         public int Index
         {
@@ -46,7 +46,7 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
-        /// Constructs a ParsingHelper instance.
+        /// Constructs a <see cref="ParsingHelper"></see> instance.
         /// </summary>
         /// <param name="text">The text to be parsed.</param>
         public ParsingHelper(string text)
@@ -75,17 +75,17 @@ namespace SoftCircuits.Parsing.Helper
         /// <summary>
         /// Indicates if the current position is at the end of the text being parsed.
         /// </summary>
-        public bool EndOfText => (InternalIndex >= Text.Length);
+        public bool EndOfText => InternalIndex >= Text.Length;
 
         /// <summary>
         /// Returns the number of characters not yet parsed. This is equal to the length of the
-        /// text being parsed minus the current position within that text.
+        /// input text minus the current position within that text.
         /// </summary>
-        public int Remaining => (Text.Length - InternalIndex);
+        public int Remaining => Text.Length - InternalIndex;
 
         /// <summary>
         /// Returns the character at the current position, or <see cref="NullChar"></see> if
-        /// we're at the end of the text being parsed.
+        /// we're at the end of the input text.
         /// </summary>
         /// <returns>The character at the current position.</returns>
         public char Peek()
@@ -97,7 +97,7 @@ namespace SoftCircuits.Parsing.Helper
         /// <summary>
         /// Returns the character at the specified number of characters beyond the current
         /// position, or <see cref="NullChar"></see> if the specified position is out of
-        /// bounds of the text being parsed.
+        /// range of the input text.
         /// </summary>
         /// <param name="count">The number of characters beyond the current position.</param>
         /// <returns>The character at the specified position.</returns>
@@ -195,7 +195,7 @@ namespace SoftCircuits.Parsing.Helper
         public bool SkipToEndOfLine() => SkipTo(NewLineChars);
 
         /// <summary>
-        /// Moves the current position to the next character that is not whitespace.
+        /// Moves the current position to the next non-whitespace character.
         /// </summary>
         public void SkipWhiteSpace()
         {
@@ -244,7 +244,7 @@ namespace SoftCircuits.Parsing.Helper
         /// <summary>
         /// Parses characters until the next occurrence of any one of the specified characters and
         /// returns a string with the parsed characters. If none of the specified characters are found,
-        /// this method parses all character to the end of the input text.
+        /// this method parses all character up to the end of the input text.
         /// </summary>
         /// <param name="chars">Characters to parse until.</param>
         /// <returns>A string with the characters parsed.</returns>
@@ -300,11 +300,13 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
-        /// Parses a quoted string. Interprets the character at the starting position as the quote
-        /// character. Two quote characters together within the string are interpreted as a single
-        /// quote literal and not the end of the string. Returns the text within the quotes and
-        /// sets the current position to the first character after the ending quote character.
+        /// Parses quoted text. Interprets the character at the current position as the starting quote
+        /// character and parses text up until the matching ending quote character. Returns the parsed
+        /// text without the quotes and sets the current position to the character following the
+        /// ending quote. If the text contains two quote characters together they are interpreted as a
+        /// single quote literal and not the end of the string.
         /// </summary>
+        /// <returns>Returns the text within the quotes.</returns>
         public string ParseQuotedText()
         {
             // Get quote character
