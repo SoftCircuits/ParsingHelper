@@ -243,6 +243,12 @@ before us -- that from these honored dead we take increased devotion to that cau
 last full measure of devotion -- that we here highly resolve that these dead shall not have died in vain --
 that this nation, under God, shall have a new birth of freedom -- and that government of the people, by the
 people, for the people, shall not perish from the earth.", helper.Extract(start));
+            Assert.AreEqual(LongTest, helper.Extract(0, LongTest.Length));
+            Assert.AreEqual("score", helper.Extract(5, 10));
+            Assert.AreNotEqual("score", helper.Extract(5, 11));
+            Assert.AreNotEqual("score", helper.Extract(4, 10));
+            Assert.AreEqual(string.Empty, helper.Extract(0, 0));
+            Assert.AreEqual(string.Empty, helper.Extract(LongTest.Length, LongTest.Length));
         }
 
         [TestMethod]

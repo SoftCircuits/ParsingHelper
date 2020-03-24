@@ -38,6 +38,7 @@ namespace SoftCircuits.Parsing.Helper
             set
             {
                 InternalIndex = value;
+                // Keep within range
                 if (InternalIndex < 0)
                     InternalIndex = 0;
                 else if (InternalIndex > Text.Length)
@@ -122,14 +123,7 @@ namespace SoftCircuits.Parsing.Helper
         /// </summary>
         /// <param name="count">The number of characters to move ahead. Use negative numbers
         /// to move back.</param>
-        public void Next(int count)
-        {
-            InternalIndex += count;
-            if (InternalIndex < 0)
-                InternalIndex = 0;
-            else if (InternalIndex > Text.Length)
-                InternalIndex = Text.Length;
-        }
+        public void Next(int count) => Index = InternalIndex + count;
 
         /// <summary>
         /// Moves the current position to the next occurrence of the specified string and returns
@@ -235,9 +229,7 @@ namespace SoftCircuits.Parsing.Helper
         public string ParseTo(string s, StringComparison comparison = StringComparison.Ordinal)
         {
             int start = InternalIndex;
-            InternalIndex = Text.IndexOf(s, InternalIndex, comparison);
-            if (InternalIndex == -1)
-                InternalIndex = Text.Length;
+            SkipTo(s, comparison);
             return Extract(start, InternalIndex);
         }
 
@@ -251,9 +243,7 @@ namespace SoftCircuits.Parsing.Helper
         public string ParseTo(params char[] chars)
         {
             int start = InternalIndex;
-            InternalIndex = Text.IndexOfAny(chars, InternalIndex);
-            if (InternalIndex == -1)
-                InternalIndex = Text.Length;
+            SkipTo(chars);
             return Extract(start, InternalIndex);
         }
 
@@ -266,8 +256,7 @@ namespace SoftCircuits.Parsing.Helper
         public string ParseWhile(Func<char, bool> predicate)
         {
             int start = InternalIndex;
-            while (!EndOfText && predicate(Peek()))
-                Next();
+            SkipWhile(predicate);
             return Extract(start, InternalIndex);
         }
 
@@ -342,7 +331,7 @@ namespace SoftCircuits.Parsing.Helper
         /// Returns false otherwise.</returns>
         public bool MatchesCurrentPosition(string s)
         {
-            if (s == null || s.Length == 0 || Remaining < s.Length)
+            if (s == null || s.Length == 0 || s.Length > Remaining)
                 return false;
 
             for (int i = 0; i < s.Length; i++)
@@ -366,7 +355,7 @@ namespace SoftCircuits.Parsing.Helper
         /// Returns false otherwise.</returns>
         public bool MatchesCurrentPosition(string s, StringComparison comparison)
         {
-            if (s == null || s.Length == 0 || Remaining < s.Length)
+            if (s == null || s.Length == 0 || s.Length > Remaining)
                 return false;
 
             return s.Equals(Text.Substring(InternalIndex, s.Length), comparison);
