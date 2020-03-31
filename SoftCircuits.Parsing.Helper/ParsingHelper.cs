@@ -125,6 +125,10 @@ namespace SoftCircuits.Parsing.Helper
         /// to move back.</param>
         public void Next(int count) => Index = InternalIndex + count;
 
+
+
+
+
         /// <summary>
         /// Moves the current position to the next occurrence of the specified string and returns
         /// <c>true</c> if successful. If the specified string is not found, this method moves the
@@ -191,20 +195,14 @@ namespace SoftCircuits.Parsing.Helper
         /// <summary>
         /// Moves the current position to the next non-whitespace character.
         /// </summary>
-        public void SkipWhiteSpace()
-        {
-            SkipWhile(char.IsWhiteSpace);
-        }
+        public void SkipWhiteSpace() => SkipWhile(char.IsWhiteSpace);
 
         /// <summary>
         /// Moves the current position to the next character that is not one of the specified
         /// characters.
         /// </summary>
         /// <param name="chars">Characters to skip over.</param>
-        public void Skip(params char[] chars)
-        {
-            SkipWhile(chars.Contains);
-        }
+        public void Skip(params char[] chars) => SkipWhile(chars.Contains);
 
         /// <summary>
         /// Moves the current position to the next character that causes <paramref name="predicate"/>
@@ -246,6 +244,13 @@ namespace SoftCircuits.Parsing.Helper
             SkipTo(chars);
             return Extract(start, InternalIndex);
         }
+
+        /// <summary>
+        /// Parses each character starting at the current position that can be found in
+        /// the specified list of characters.
+        /// </summary>
+        /// <param name="chars">Characters to parse.</param>
+        public string Parse(params char[] chars) => ParseWhile(chars.Contains);
 
         /// <summary>
         /// Parses characters until the next character that causes <paramref name="predicate"/> to

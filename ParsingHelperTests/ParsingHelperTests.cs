@@ -180,6 +180,11 @@ people, for the people, shall not perish from the earth.";
 
             helper.Reset();
             Assert.IsTrue(helper.SkipTo("score"));
+            Assert.AreEqual("score", helper.Parse('e', 'r', 'o', 'c', 's'));
+            Assert.AreEqual(' ', helper.Peek());
+
+            helper.Reset();
+            Assert.IsTrue(helper.SkipTo("score"));
             Assert.AreEqual("score and seven years ago our fathers brought forth on this continent", helper.ParseWhile(c => c != ','));
             Assert.AreEqual(',', helper.Peek());
 
