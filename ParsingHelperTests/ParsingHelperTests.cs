@@ -182,6 +182,8 @@ people, for the people, shall not perish from the earth.";
             Assert.IsTrue(helper.SkipTo("score"));
             Assert.AreEqual("score", helper.Parse('e', 'r', 'o', 'c', 's'));
             Assert.AreEqual(' ', helper.Peek());
+            Assert.AreEqual(" ", helper.Parse(' '));
+            Assert.AreEqual('a', helper.Peek());
 
             helper.Reset();
             Assert.IsTrue(helper.SkipTo("score"));

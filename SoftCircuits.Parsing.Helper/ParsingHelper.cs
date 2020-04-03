@@ -14,13 +14,13 @@ namespace SoftCircuits.Parsing.Helper
     /// </summary>
     public class ParsingHelper
     {
-        private static readonly char[] NewLineChars = { '\r', '\n' };
+        private static readonly char[] NewLineChars = Environment.NewLine.ToCharArray();
+
         private int InternalIndex;
 
         /// <summary>
-        /// Represents a invalid character. This character is returned when attempting
-        /// to read an out-of-range character. The character is represented as
-        /// <c>'\0'</c>.
+        /// Represents a invalid character. This character is returned when attempting to read
+        /// a character at an invalid position. The character is represented as <c>'\0'</c>.
         /// </summary>
         public const char NullChar = '\0';
 
@@ -30,24 +30,8 @@ namespace SoftCircuits.Parsing.Helper
         public string Text { get; private set; }
 
         /// <summary>
-        /// Sets or gets the current position within the input text.
-        /// </summary>
-        public int Index
-        {
-            get => InternalIndex;
-            set
-            {
-                InternalIndex = value;
-                // Keep within range
-                if (InternalIndex < 0)
-                    InternalIndex = 0;
-                else if (InternalIndex > Text.Length)
-                    InternalIndex = Text.Length;
-            }
-        }
-
-        /// <summary>
-        /// Constructs a <see cref="ParsingHelper"></see> instance.
+        /// Constructs a <see cref="ParsingHelper"></see> instance. Sets the text to be parsed
+        /// and sets the current position to the start of that text.
         /// </summary>
         /// <param name="text">The text to be parsed.</param>
         public ParsingHelper(string text)
@@ -74,6 +58,23 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
+        /// Sets or gets the current position within the input text.
+        /// </summary>
+        public int Index
+        {
+            get => InternalIndex;
+            set
+            {
+                InternalIndex = value;
+                // Keep within range
+                if (InternalIndex < 0)
+                    InternalIndex = 0;
+                else if (InternalIndex > Text.Length)
+                    InternalIndex = Text.Length;
+            }
+        }
+
+        /// <summary>
         /// Indicates if the current position is at the end of the text being parsed.
         /// </summary>
         public bool EndOfText => InternalIndex >= Text.Length;
@@ -86,7 +87,7 @@ namespace SoftCircuits.Parsing.Helper
 
         /// <summary>
         /// Returns the character at the current position, or <see cref="NullChar"></see> if
-        /// we're at the end of the input text.
+        /// the current position is at the end of the input text.
         /// </summary>
         /// <returns>The character at the current position.</returns>
         public char Peek()
@@ -97,10 +98,10 @@ namespace SoftCircuits.Parsing.Helper
 
         /// <summary>
         /// Returns the character at the specified number of characters beyond the current
-        /// position, or <see cref="NullChar"></see> if the specified position is out of
-        /// range of the input text.
+        /// position, or <see cref="NullChar"></see> if the specified position is invalid.
         /// </summary>
-        /// <param name="count">The number of characters beyond the current position.</param>
+        /// <param name="count">Specifies the position of the character to read as the number
+        /// of characters beyond the current position.</param>
         /// <returns>The character at the specified position.</returns>
         public char Peek(int count)
         {
@@ -124,10 +125,6 @@ namespace SoftCircuits.Parsing.Helper
         /// <param name="count">The number of characters to move ahead. Use negative numbers
         /// to move back.</param>
         public void Next(int count) => Index = InternalIndex + count;
-
-
-
-
 
         /// <summary>
         /// Moves the current position to the next occurrence of the specified string and returns
@@ -178,10 +175,12 @@ namespace SoftCircuits.Parsing.Helper
         {
             // Move to start of next line break
             SkipToEndOfLine();
-            // Move to end of line break (start of next line)
-            if (Peek() == NewLineChars[0] && Peek(1) == NewLineChars[1])
+            // Move to end of line break (start of the next line)
+            if (MatchesCurrentPosition(NewLineChars))
+                Next(NewLineChars.Length);
+            else
                 Next();
-            Next();
+            // Next line found if not at end of text
             return (InternalIndex < Text.Length);
         }
 
@@ -211,8 +210,9 @@ namespace SoftCircuits.Parsing.Helper
         /// <param name="predicate">Function to test each character.</param>
         public void SkipWhile(Func<char, bool> predicate)
         {
-            while (!EndOfText && predicate(Peek()))
-                Next();
+            Debug.Assert(InternalIndex >= 0);
+            while (InternalIndex < Text.Length && predicate(Text[InternalIndex]))
+                InternalIndex++;
         }
 
         /// <summary>
@@ -247,7 +247,7 @@ namespace SoftCircuits.Parsing.Helper
 
         /// <summary>
         /// Parses each character starting at the current position that can be found in
-        /// the specified list of characters.
+        /// the specified characters.
         /// </summary>
         /// <param name="chars">Characters to parse.</param>
         public string Parse(params char[] chars) => ParseWhile(chars.Contains);
@@ -324,6 +324,25 @@ namespace SoftCircuits.Parsing.Helper
                 else break; // Done if single closing quote or end of text
             }
             return builder.ToString();
+        }
+
+        /// <summary>
+        /// Compares the given character array to the characters starting at the current position using a
+        /// case-sensitive comparison.
+        /// </summary>
+        /// <returns>Returns <c>true</c> if the given string characters match the text at the current
+        /// position. Returns false otherwise.</returns>
+        public bool MatchesCurrentPosition(char[] chars)
+        {
+            if (chars == null || chars.Length == 0 || chars.Length > Remaining)
+                return false;
+
+            for (int i = 0; i < chars.Length; i++)
+            {
+                if (chars[i] != Text[InternalIndex + i])
+                    return false;
+            }
+            return true;
         }
 
         /// <summary>
