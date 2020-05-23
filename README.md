@@ -83,7 +83,7 @@ CollectionAssert.AreEqual(new[] { "v", "f", "d", "o" }, flags);
 
 #### Pasre a Sentence into Words
 
-This example parses into words. This implementation considers a word to be any string of characters that include letters, digits, or an apostrophe (').
+This example parses a sentence into words. This implementation considers a word to be any string of characters that include letters, digits, or an apostrophe (').
 
 ```cs
 ParsingHelper helper = new ParsingHelper("The quick brown fox jumps over the lazy dog.");
