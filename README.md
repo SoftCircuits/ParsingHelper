@@ -10,7 +10,7 @@ Install-Package SoftCircuits.Parsing.Helper
 
 `ParsingHelper` is a .NET class library that makes it easier to parse text. The library tracks the current position within the text, ensures your code never attempts to access a character at an invalid index, and includes a number of methods that make parsing easier. The library makes your text-parsing code more concise and more robust.
 
-## Getting Started
+## Examples
 
 Here are a couple of examples to illustrate use of the library.
 
@@ -109,6 +109,8 @@ CollectionAssert.AreEqual(new[] {
     "lazy",
     "dog" }, arguments);
 ```
+
+## Documentation
 
 The `ParsingHelper` constructor accepts a string argument that represents the text you are going to parse. If this argument is `null`, it will be safely treated as an empty string.
 
