@@ -8,11 +8,107 @@ Install-Package SoftCircuits.Parsing.Helper
 
 ## Introduction
 
-`ParsingHelper` is a .NET class library that helps you parse text. It tracks the current position within the text being parsed and provides a number of methods that make parsing easier.
-
-The library also ensures you never attempt to access an out-of-range character, which would throw an exception. This means you can focus on your parsing logic instead of sprinkling your code with checks to make sure you are still within bounds.
+`ParsingHelper` is a .NET class library that makes it easier to parse text. The library tracks the current position within the text, ensures your code never attempts to access a character at an invalid index, and includes a number of methods that make parsing easier. The library makes your text-parsing code more concise and more robust.
 
 ## Getting Started
+
+Here are a couple of examples to illustrate use of the library.
+
+#### Name and Value (with Extra Whitespace)
+
+This example parses a name, value pair with extra spaces. Since the value has a space in it, it's enclosed in quotes. But the code would also correctly handle a value without quotes as long as it has no spaces.
+
+```cs
+ParsingHelper helper = new ParsingHelper("       Name   =     \"Bob Smith\"   ");
+string name, value;
+
+// First non-space token is the name
+name = helper.ParseToken(' ');
+// Skip to the equal sign
+helper.SkipTo('=');
+// Skip over the equal sign
+helper++;
+// Skip any whitespace
+helper.SkipWhiteSpace();
+// Parse value
+if (helper.Peek() == '"')
+    value = helper.ParseQuotedText();
+else
+    value = helper.ParseWhile(c => !char.IsWhiteSpace(c));
+
+Assert.AreEqual("Name", name);
+Assert.AreEqual("Bob Smith", value);
+```
+
+#### Command Line
+
+This example parses a command line. It detects both arguments and flags (arguments preceded with `'-'` or `'/'`). It's okay with whitespace between the flag character and flag. And any argument or flag that contains whitespace can be enclosed in quotes.
+
+```cs
+ParsingHelper helper = new ParsingHelper("app -v -f /d-o file1 \"file 2\"");
+List<string> arguments = new List<string>();
+List<string> flags = new List<string>();
+
+char[] flagCharacters = new char[] { '-', '/' };
+string arg;
+bool isFlag = false;
+
+while (!helper.EndOfText)
+{
+    // Skip any whitespace
+    helper.SkipWhiteSpace();
+    // Is this a flag?
+    if (flagCharacters.Contains(helper.Peek()))
+    {
+        isFlag = true;
+        // Skip over flag character
+        helper++;
+        // Allow whitespace between flag character and flag
+        helper.SkipWhiteSpace();
+    }
+    else isFlag = false;
+    // Parse item
+    if (helper.Peek() == '"')
+        arg = helper.ParseQuotedText();
+    else
+        arg = helper.ParseWhile(c => !char.IsWhiteSpace(c) && !flagCharacters.Contains(c));
+    // Add argument to appropriate collection
+    if (isFlag)
+        flags.Add(arg);
+    else
+        arguments.Add(arg);
+}
+
+CollectionAssert.AreEqual(new[] { "app", "file1", "file 2" }, arguments);
+CollectionAssert.AreEqual(new[] { "v", "f", "d", "o" }, flags);
+```
+
+#### Pasre a Sentence into Words
+
+This example parses into words. This implementation considers a word to be any string of characters that include letters, digits, or an apostrophe (').
+
+```cs
+ParsingHelper helper = new ParsingHelper("The quick brown fox jumps over the lazy dog.");
+List<string> words = new List<string>();
+
+while (!helper.EndOfText)
+{
+    string word = helper.ParseToken(c => !char.IsLetterOrDigit(c) && c != '\'');
+    if (word.Length > 0)
+        words.Add(word);
+}
+
+CollectionAssert.AreEqual(new[] {
+    "The",
+    "quick",
+    "brown",
+    "fox",
+    "jumps",
+    "over",
+    "the",
+    "lazy",
+    "dog" }, arguments);
+```
 
 The `ParsingHelper` constructor accepts a string argument that represents the text you are going to parse. If this argument is `null`, it will be safely treated as an empty string.
 
