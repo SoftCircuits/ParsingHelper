@@ -22,10 +22,8 @@ This example parses a name/value pair with some extra whitespace. Since the valu
 ParsingHelper helper = new ParsingHelper("       Name   =     \"Bob Smith\"   ");
 string name, value;
 
-// First non-space token is the name
-name = helper.ParseToken(' ');
-// Skip to the equal sign
-helper.SkipTo('=');
+// Token before the equal sign is the name
+name = helper.ParseTo('=').Trim();
 // Skip over the equal sign
 helper++;
 // Skip any whitespace
