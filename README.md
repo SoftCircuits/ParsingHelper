@@ -16,7 +16,7 @@ Here are a couple of examples to illustrate use of the library.
 
 #### Name and Value (with Extra Whitespace)
 
-This example parses a name, value pair with extra spaces. Since the value has a space in it, it's enclosed in quotes. But the code would also correctly handle a value without quotes as long as it has no spaces.
+This example parses a name/value pair with some extra whitespace. Since the value has a space in it, it's enclosed in quotes. But the code would also correctly handle a value without quotes as long as it has no spaces. Note that the code doesn't need to test if the end of the string has been reached (which would happen, for example, if there was no equal sign). If the end of the string is reached, it won't cause any problems.
 
 ```cs
 ParsingHelper helper = new ParsingHelper("       Name   =     \"Bob Smith\"   ");
