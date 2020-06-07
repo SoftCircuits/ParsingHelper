@@ -200,6 +200,15 @@ people, for the people, shall not perish from the earth.";
             helper.Reset();
             Assert.AreEqual("Four", helper.ParseToken(' ', '\r', '\n'));
             Assert.AreEqual(' ', helper.Peek());
+
+            string parseAllText = "  \t\tthe \r\n\t\t  rain in\t\t    spain\r\n   falls\r\nmainly  on\tthe\r\nplain.    ";
+            string[] parseAllResults = new[] { "the", "rain", "in", "spain", "falls", "mainly", "on", "the", "plain" };
+
+            helper.Reset(parseAllText);
+            CollectionAssert.AreEqual(parseAllResults, helper.ParseAllTokens(' ', '\t', '\r', '\n', '.').ToList());
+
+            helper.Reset();
+            CollectionAssert.AreEqual(parseAllResults, helper.ParseAllTokens(c => " \t\r\n.".Contains(c)).ToList());
         }
 
         [TestMethod]
