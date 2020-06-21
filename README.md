@@ -20,6 +20,7 @@ This example parses a sentence into words. This implementation only considers sp
 
 ```cs
 ParsingHelper helper = new ParsingHelper("The quick brown fox jumps over the lazy dog.");
+
 List<string> words = helper.ParseAllTokens(' ', '.').ToList();
 
 CollectionAssert.AreEqual(new[] {
