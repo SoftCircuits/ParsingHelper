@@ -87,14 +87,7 @@ This example parses a sentence into words. This implementation considers a word 
 
 ```cs
 ParsingHelper helper = new ParsingHelper("The quick brown fox jumps over the lazy dog.");
-List<string> words = new List<string>();
-
-while (!helper.EndOfText)
-{
-    string word = helper.ParseToken(c => !char.IsLetterOrDigit(c) && c != '\'');
-    if (word.Length > 0)
-        words.Add(word);
-}
+List<string> words = helper.ParseAllTokens(' ', '.').ToList();
 
 CollectionAssert.AreEqual(new[] {
     "The",
@@ -105,7 +98,7 @@ CollectionAssert.AreEqual(new[] {
     "over",
     "the",
     "lazy",
-    "dog" }, arguments);
+    "dog" }, words);
 ```
 
 ## Documentation
