@@ -35,31 +35,6 @@ CollectionAssert.AreEqual(new[] {
     "dog" }, words);
 ```
 
-
-#### Name and Value (with Extra Whitespace)
-
-This example parses a name/value pair with some extra whitespace. Since the value has a space in it, it's enclosed in quotes. But the code would also correctly handle a value without quotes as long as it has no spaces. Note that the code doesn't need to test if the end of the string has been reached (which would happen, for example, if there was no equal sign). If the end of the string is reached, it won't cause any problems.
-
-```cs
-ParsingHelper helper = new ParsingHelper("       Name   =     \"Bob Smith\"   ");
-string name, value;
-
-// Token before the equal sign is the name
-name = helper.ParseTo('=').Trim();
-// Skip over the equal sign
-helper++;
-// Skip any whitespace
-helper.SkipWhiteSpace();
-// Parse value
-if (helper.Peek() == '"')
-    value = helper.ParseQuotedText();
-else
-    value = helper.ParseWhile(c => !char.IsWhiteSpace(c));
-
-Assert.AreEqual("Name", name);
-Assert.AreEqual("Bob Smith", value);
-```
-
 #### Command Line
 
 This example parses a command line. It detects both arguments and flags (arguments preceded with `'-'` or `'/'`). It's okay with whitespace between the flag character and flag. And any argument or flag that contains whitespace can be enclosed in quotes.
@@ -101,6 +76,30 @@ while (!helper.EndOfText)
 
 CollectionAssert.AreEqual(new[] { "app", "file1", "file 2" }, arguments);
 CollectionAssert.AreEqual(new[] { "v", "f", "d", "o" }, flags);
+```
+
+#### Name and Value (with Extra Whitespace)
+
+This example parses a name/value pair with some extra whitespace. Since the value has a space in it, it's enclosed in quotes. But the code would also correctly handle a value without quotes as long as it has no spaces. Note that the code doesn't need to test if the end of the string has been reached (which would happen, for example, if there was no equal sign). If the end of the string is reached, it won't cause any problems.
+
+```cs
+ParsingHelper helper = new ParsingHelper("       Name   =     \"Bob Smith\"   ");
+string name, value;
+
+// Token before the equal sign is the name
+name = helper.ParseTo('=').Trim();
+// Skip over the equal sign
+helper++;
+// Skip any whitespace
+helper.SkipWhiteSpace();
+// Parse value
+if (helper.Peek() == '"')
+    value = helper.ParseQuotedText();
+else
+    value = helper.ParseWhile(c => !char.IsWhiteSpace(c));
+
+Assert.AreEqual("Name", name);
+Assert.AreEqual("Bob Smith", value);
 ```
 
 ## Documentation
