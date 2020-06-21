@@ -14,6 +14,27 @@ Install-Package SoftCircuits.Parsing.Helper
 
 Here are a couple of examples to illustrate use of the library.
 
+#### Parse a Sentence into Words
+
+This example parses a sentence into words. This implementation only considers spaces and periods as word delimiters. But you could easily add more characters, or use the overload of `ParsingHelper.ParseAllTokens()` that accepts a lambda expression.
+
+```cs
+ParsingHelper helper = new ParsingHelper("The quick brown fox jumps over the lazy dog.");
+List<string> words = helper.ParseAllTokens(' ', '.').ToList();
+
+CollectionAssert.AreEqual(new[] {
+    "The",
+    "quick",
+    "brown",
+    "fox",
+    "jumps",
+    "over",
+    "the",
+    "lazy",
+    "dog" }, words);
+```
+
+
 #### Name and Value (with Extra Whitespace)
 
 This example parses a name/value pair with some extra whitespace. Since the value has a space in it, it's enclosed in quotes. But the code would also correctly handle a value without quotes as long as it has no spaces. Note that the code doesn't need to test if the end of the string has been reached (which would happen, for example, if there was no equal sign). If the end of the string is reached, it won't cause any problems.
@@ -79,26 +100,6 @@ while (!helper.EndOfText)
 
 CollectionAssert.AreEqual(new[] { "app", "file1", "file 2" }, arguments);
 CollectionAssert.AreEqual(new[] { "v", "f", "d", "o" }, flags);
-```
-
-#### Pasre a Sentence into Words
-
-This example parses a sentence into words. This implementation considers a word to be any string of characters that include letters, digits, or an apostrophe (').
-
-```cs
-ParsingHelper helper = new ParsingHelper("The quick brown fox jumps over the lazy dog.");
-List<string> words = helper.ParseAllTokens(' ', '.').ToList();
-
-CollectionAssert.AreEqual(new[] {
-    "The",
-    "quick",
-    "brown",
-    "fox",
-    "jumps",
-    "over",
-    "the",
-    "lazy",
-    "dog" }, words);
 ```
 
 ## Documentation
