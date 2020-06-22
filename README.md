@@ -14,28 +14,25 @@ Install-Package SoftCircuits.Parsing.Helper
 
 Here are a couple of examples to illustrate use of the library.
 
-#### Name and Value (with Extra Whitespace)
+#### Parse a Sentence into Words
 
-This example parses a name/value pair with some extra whitespace. Since the value has a space in it, it's enclosed in quotes. But the code would also correctly handle a value without quotes as long as it has no spaces. Note that the code doesn't need to test if the end of the string has been reached (which would happen, for example, if there was no equal sign). If the end of the string is reached, it won't cause any problems.
+This example parses a sentence into words. This implementation only considers spaces and periods as word delimiters. But you could easily add more characters, or use the overload of `ParsingHelper.ParseTokens()` that accepts a lambda expression.
 
 ```cs
-ParsingHelper helper = new ParsingHelper("       Name   =     \"Bob Smith\"   ");
-string name, value;
+ParsingHelper helper = new ParsingHelper("The quick brown fox jumps over the lazy dog.");
 
-// Token before the equal sign is the name
-name = helper.ParseTo('=').Trim();
-// Skip over the equal sign
-helper++;
-// Skip any whitespace
-helper.SkipWhiteSpace();
-// Parse value
-if (helper.Peek() == '"')
-    value = helper.ParseQuotedText();
-else
-    value = helper.ParseWhile(c => !char.IsWhiteSpace(c));
+List<string> words = helper.ParseTokens(' ', '.').ToList();
 
-Assert.AreEqual("Name", name);
-Assert.AreEqual("Bob Smith", value);
+CollectionAssert.AreEqual(new[] {
+    "The",
+    "quick",
+    "brown",
+    "fox",
+    "jumps",
+    "over",
+    "the",
+    "lazy",
+    "dog" }, words);
 ```
 
 #### Command Line
@@ -81,31 +78,22 @@ CollectionAssert.AreEqual(new[] { "app", "file1", "file 2" }, arguments);
 CollectionAssert.AreEqual(new[] { "v", "f", "d", "o" }, flags);
 ```
 
-#### Pasre a Sentence into Words
+#### Regular Expressions
 
-This example parses a sentence into words. This implementation considers a word to be any string of characters that include letters, digits, or an apostrophe (').
+This example parses a name/value pair with some extra whitespace. Since the value has a space in it, it's enclosed in quotes. But the code would also correctly handle a value without quotes as long as it has no spaces. Note that the code doesn't need to test if the end of the string has been reached (which would happen, for example, if there was no equal sign). If the end of the string is reached, it won't cause any problems.
 
 ```cs
-ParsingHelper helper = new ParsingHelper("The quick brown fox jumps over the lazy dog.");
-List<string> words = new List<string>();
+ParsingHelper helper = new ParsingHelper("Jim Jack Sally Jennifer Bob Gary Jonathan Bill");
 
-while (!helper.EndOfText)
+IEnumerable<string> results = helper.ParseTokensRegEx(@"\b[J]\w+");
+
+CollectionAssert.AreEqual(new[]
 {
-    string word = helper.ParseToken(c => !char.IsLetterOrDigit(c) && c != '\'');
-    if (word.Length > 0)
-        words.Add(word);
-}
-
-CollectionAssert.AreEqual(new[] {
-    "The",
-    "quick",
-    "brown",
-    "fox",
-    "jumps",
-    "over",
-    "the",
-    "lazy",
-    "dog" }, arguments);
+    "Jim",
+    "Jack",
+    "Jennifer",
+    "Jonathan"
+}, results.ToList());
 ```
 
 ## Documentation
