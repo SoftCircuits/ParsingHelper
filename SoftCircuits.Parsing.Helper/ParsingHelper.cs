@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SoftCircuits.Parsing.Helper
 {
@@ -139,7 +140,23 @@ namespace SoftCircuits.Parsing.Helper
         /// <summary>
         /// Moves the current position to the next non-whitespace character.
         /// </summary>
-        public void SkipWhiteSpace() => SkipWhile(char.IsWhiteSpace);
+        public void SkipWhiteSpace()
+        {
+            SkipWhile(char.IsWhiteSpace);
+        }
+
+        /// <summary>
+        /// Moves the current position to the next non-whitespace character with options
+        /// to stop at the next end of line or new line.
+        /// </summary>
+        /// <param name="option"></param>
+        public void SkipWhiteSpace(SkipWhiteSpaceOption option)
+        {
+            Debug.Assert(option == SkipWhiteSpaceOption.StopAtEol || option == SkipWhiteSpaceOption.StopAtNextLine);
+            SkipWhile(c => char.IsWhiteSpace(c) && !NewLineCharacters.Contains(c));
+            if (option == SkipWhiteSpaceOption.StopAtNextLine)
+                SkipToNextLine();
+        }
 
         /// <summary>
         /// Moves the current position to the next character for which
@@ -187,6 +204,26 @@ namespace SoftCircuits.Parsing.Helper
             if (InternalIndex >= 0)
                 return true;
             InternalIndex = Text.Length;
+            return false;
+        }
+
+        /// <summary>
+        /// Moves the current position to the start of the next token that matches the given regular
+        /// expression and returns <c>true</c> if successful. If no match is found, this method
+        /// moves the current position to the end of the input text and returns <c>false</c>.
+        /// </summary>
+        /// <param name="regularExpression">A regular expression that the token must match.</param>
+        /// <returns>Returns a Boolean value that indicates if a match was found.</returns>
+        public bool SkipToRegEx(string regularExpression)
+        {
+            Regex regex = new Regex(regularExpression);
+            Match match = regex.Match(Text, Index);
+            if (match.Success)
+            {
+                Index = match.Index;
+                return true;
+            }
+            Index = Text.Length;
             return false;
         }
 
@@ -274,6 +311,20 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
+        /// Parses characters until the start of the next token that matches the given regular
+        /// expression and returns a string with the parsed characters. If no match is found, this
+        /// method parses all characters to the end of the input text. Can return an empty string.
+        /// </summary>
+        /// <param name="regularExpression">A regular expression that the token must match.</param>
+        /// <returns>A string with the parsed characters.</returns>
+        public string ParseToRegEx(string regularExpression)
+        {
+            int start = InternalIndex;
+            SkipToRegEx(regularExpression);
+            return Extract(start, InternalIndex);
+        }
+
+        /// <summary>
         /// Parses text using the specified delimiter characters. Skips any characters that are in the
         /// list of delimiters, and then parses any characters that are not in the list of delimiters.
         /// Returns the parsed characters.
@@ -302,12 +353,39 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
+        /// Parses the next token that matches the given regular expression and sets the current position to
+        /// the end of that token. If no match is found, the current position is set to the end of the text
+        /// and an empty string is returned.
+        /// </summary>
+        /// <param name="regularExpression">A regular expression that the token must match.</param>
+        /// <returns>Returns the matching token.</returns>
+        public string ParseTokenRegEx(string regularExpression)
+        {
+            Regex regex = new Regex(regularExpression);
+            Match match = regex.Match(Text, Index);
+            if (match.Success)
+            {
+                Index = match.Index + match.Length;
+                return match.Value;
+            }
+            Index = Text.Length;
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// This method has been deprecated. Please use <see cref="ParseTokens(char[])"/> instead.
+        /// </summary>
+        [Obsolete("This method has been deprecated and will be removed in a future version. Please use ParseTokens() instead.")]
+        public IEnumerable<string> ParseAllTokens(params char[] delimiters) => ParseTokens(delimiters);
+
+        /// <summary>
         /// Parses and returns all tokens to the end of the text being parsed. The specified
         /// characters indicate delimiter characters that are not part of a token.
         /// </summary>
         /// <param name="delimiters">Token delimiter characters.</param>
+        /// <param name="count">The maxiumum number of tokens to parse.</param>
         /// <returns>Returns the parsed tokens.</returns>
-        public IEnumerable<string> ParseAllTokens(params char[] delimiters)
+        public IEnumerable<string> ParseTokens(params char[] delimiters)
         {
             Skip(delimiters);
             while (!EndOfText)
@@ -318,13 +396,38 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
+        /// Parses and returns up to the specified number of tokens. The specified
+        /// characters indicate delimiter characters that are not part of a token.
+        /// </summary>
+        /// <param name="count">The maxiumum number of tokens to parse.</param>
+        /// <param name="delimiters">Token delimiter characters.</param>
+        /// <returns>Returns the parsed tokens.</returns>
+        public IEnumerable<string> ParseTokens(int count, params char[] delimiters)
+        {
+            Skip(delimiters);
+            while (!EndOfText)
+            {
+                if (count-- <= 0)
+                    break;
+                yield return ParseTo(delimiters);
+                Skip(delimiters);
+            }
+        }
+
+        /// <summary>
+        /// This method has been deprecated. Please use <see cref="ParseTokens(Func{char, bool})"/> instead.
+        /// </summary>
+        [Obsolete("This method has been deprecated and will be removed in a future version. Please use ParseTokens() instead.")]
+        public IEnumerable<string> ParseAllTokens(Func<char, bool> predicate) => ParseTokens(predicate);
+
+        /// <summary>
         /// Parses and returns all tokens to the end of the text being parsed. <paramref name="predicate"/>
         /// returns <c>true</c> for delimiter characters that are not part of a token.
         /// </summary>
         /// <param name="predicate">Function that returns <c>true</c> for token delimiter
         /// characters.</param>
         /// <returns>Returns the parsed tokens.</returns>
-        public IEnumerable<string> ParseAllTokens(Func<char, bool> predicate)
+        public IEnumerable<string> ParseTokens(Func<char, bool> predicate)
         {
             SkipWhile(predicate);
             while (!EndOfText)
@@ -332,6 +435,47 @@ namespace SoftCircuits.Parsing.Helper
                 yield return ParseWhile(c => !predicate(c));
                 SkipWhile(predicate);
             }
+        }
+
+        /// <summary>
+        /// Parses and returns up to the specified number of tokens. <paramref name="predicate"/>
+        /// returns <c>true</c> for delimiter characters that are not part of a token.
+        /// </summary>
+        /// <param name="count">Specifies the maximum number of tokens to parse.</param>
+        /// <param name="predicate">Function that returns <c>true</c> for token delimiter
+        /// characters.</param>
+        /// <returns>Returns the parsed tokens.</returns>
+        public IEnumerable<string> ParseTokens(int count, Func<char, bool> predicate)
+        {
+            SkipWhile(predicate);
+            while (!EndOfText)
+            {
+                if (count-- <= 0)
+                    break;
+                yield return ParseWhile(c => !predicate(c));
+                SkipWhile(predicate);
+            }
+        }
+
+        /// <summary>
+        /// Parses all tokens that match the given regular expression and sets the current position the end
+        /// of the last token. If no matches are found, the current position is set to the end of the text
+        /// and an empty collection is returned.
+        /// </summary>
+        /// <param name="regularExpression">A regular expression that the tokens must match.</param>
+        /// <returns>Returns the matching tokens.</returns>
+        public IEnumerable<string> ParseTokensRegEx(string regularExpression)
+        {
+            Regex regex = new Regex(regularExpression);
+            MatchCollection matches = regex.Matches(Text, Index);
+            if (matches.Count > 0)
+            {
+                Match lastMatch = matches[matches.Count - 1];
+                Index = lastMatch.Index + lastMatch.Length;
+                foreach (Match match in matches)
+                    yield return match.Value;
+            }
+            else Index = Text.Length;
         }
 
         /// <summary>
@@ -446,6 +590,12 @@ namespace SoftCircuits.Parsing.Helper
         /// character to be extracted.</param>
         /// <returns>Returns the extracted string.</returns>
         public string Extract(int start, int end) => Text.Substring(start, end - start);
+
+        /// <summary>
+        /// Calculates the line and column of the current position.
+        /// </summary>
+        /// <returns>A <see cref="ParsingPosition"/> that represents the current position.</returns>
+        public ParsingPosition CalculatePosition() => ParsingPosition.CalculatePosition(Text, Index);
 
         #region Operator overloads
 

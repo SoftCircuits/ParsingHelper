@@ -7,7 +7,6 @@ using SoftCircuits.Parsing.Helper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Channels;
 
 namespace ParsingHelperTests
 {
@@ -115,7 +114,7 @@ people, for the people, shall not perish from the earth.";
             ParsingHelper helper = new ParsingHelper(LongTest);
 
             // SkipTo
-            Assert.IsTrue(helper.SkipTo("score"));
+            Assert.IsTrue(helper.SkipToRegEx("score"));
             Assert.AreEqual('s', helper.Peek());
             Assert.AreEqual('c', helper.Peek(1));
             helper.Reset();
@@ -126,7 +125,7 @@ people, for the people, shall not perish from the earth.";
             Assert.IsTrue(helper.SkipTo('v'));
             Assert.AreEqual('v', helper.Peek());
             Assert.AreEqual('e', helper.Peek(1));
-            Assert.IsFalse(helper.SkipTo("XxXxXxX"));
+            Assert.IsFalse(helper.SkipToRegEx("XxXxXxX"));
             Assert.AreEqual(LongTest.Length, helper.Index);
             Assert.AreEqual(true, helper.EndOfText);
             Assert.AreEqual(0, helper.Remaining);
@@ -136,6 +135,14 @@ people, for the people, shall not perish from the earth.";
             Assert.IsTrue(helper.SkipTo(' '));
             helper.SkipWhiteSpace();
             Assert.AreEqual('s', helper.Peek());
+
+            // SkipWhiteSpace with options
+            ParsingHelper helper2 = new ParsingHelper("    \r\nxyz");
+            helper2.SkipWhiteSpace(SkipWhiteSpaceOption.StopAtEol);
+            Assert.IsTrue(helper2.MatchesCurrentPosition("\r\nxyz"));
+            helper2.Reset();
+            helper2.SkipWhiteSpace(SkipWhiteSpaceOption.StopAtNextLine);
+            Assert.IsTrue(helper2.MatchesCurrentPosition("xyz"));
 
             // SkipWhile
             helper.SkipWhile(c => "score".Contains(c));
@@ -166,29 +173,29 @@ people, for the people, shall not perish from the earth.";
         {
             ParsingHelper helper = new ParsingHelper(LongTest);
 
-            Assert.IsTrue(helper.SkipTo("score"));
+            Assert.IsTrue(helper.SkipToRegEx("score"));
             Assert.AreEqual("score and seven years ago our ", helper.ParseTo("fathers"));
             Assert.AreEqual('f', helper.Peek());
 
             helper.Reset();
-            Assert.IsTrue(helper.SkipTo("score"));
+            Assert.IsTrue(helper.SkipToRegEx("score"));
             Assert.AreEqual("score and seven years ago our ", helper.ParseTo("FATHERS", StringComparison.OrdinalIgnoreCase));
             Assert.AreEqual('f', helper.Peek());
 
             helper.Reset();
-            Assert.IsTrue(helper.SkipTo("score"));
+            Assert.IsTrue(helper.SkipToRegEx("score"));
             Assert.AreEqual("score and se", helper.ParseTo('v', 'X', 'Y', 'Z'));
             Assert.AreEqual('v', helper.Peek());
 
             helper.Reset();
-            Assert.IsTrue(helper.SkipTo("score"));
+            Assert.IsTrue(helper.SkipToRegEx("score"));
             Assert.AreEqual("score", helper.Parse('e', 'r', 'o', 'c', 's'));
             Assert.AreEqual(' ', helper.Peek());
             Assert.AreEqual(" ", helper.Parse(' '));
             Assert.AreEqual('a', helper.Peek());
 
             helper.Reset();
-            Assert.IsTrue(helper.SkipTo("score"));
+            Assert.IsTrue(helper.SkipToRegEx("score"));
             Assert.AreEqual("score and seven years ago our fathers brought forth on this continent", helper.ParseWhile(c => c != ','));
             Assert.AreEqual(',', helper.Peek());
 
@@ -205,10 +212,10 @@ people, for the people, shall not perish from the earth.";
             string[] parseAllResults = new[] { "the", "rain", "in", "spain", "falls", "mainly", "on", "the", "plain" };
 
             helper.Reset(parseAllText);
-            CollectionAssert.AreEqual(parseAllResults, helper.ParseAllTokens(' ', '\t', '\r', '\n', '.').ToList());
+            CollectionAssert.AreEqual(parseAllResults, helper.ParseTokens(' ', '\t', '\r', '\n', '.').ToList());
 
             helper.Reset();
-            CollectionAssert.AreEqual(parseAllResults, helper.ParseAllTokens(c => " \t\r\n.".Contains(c)).ToList());
+            CollectionAssert.AreEqual(parseAllResults, helper.ParseTokens(c => " \t\r\n.".Contains(c)).ToList());
         }
 
         [TestMethod]
@@ -237,7 +244,7 @@ people, for the people, shall not perish from the earth.";
         public void MatchesCurrentPositionTests()
         {
             ParsingHelper helper = new ParsingHelper(LongTest);
-            Assert.IsTrue(helper.SkipTo("consecrated it"));
+            Assert.IsTrue(helper.SkipToRegEx("consecrated it"));
             Assert.AreEqual(true, helper.MatchesCurrentPosition("consecrated it"));
             Assert.AreEqual(true, helper.MatchesCurrentPosition("CONSECRATED IT", StringComparison.OrdinalIgnoreCase));
             Assert.AreEqual(false, helper.MatchesCurrentPosition("consecrated_it"));
@@ -249,7 +256,7 @@ people, for the people, shall not perish from the earth.";
         {
             ParsingHelper helper = new ParsingHelper(LongTest);
             string s = "consecrated it";
-            Assert.IsTrue(helper.SkipTo(s));
+            Assert.IsTrue(helper.SkipToRegEx(s));
             int start = helper.Index;
             helper.Next(s.Length);
             Assert.AreEqual(s, helper.Extract(start, helper.Index));
@@ -297,6 +304,83 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
             Assert.AreEqual(LongTest.Length, helper);
             helper -= 10000;
             Assert.AreEqual(0, helper);
+        }
+
+        [TestMethod]
+        public void RegExTests()
+        {
+            string text = "summer side creature toothpaste dime wind harbor cake nail attention opinion railway horses garden alley quicksand knot servant fight form park polish toad rub hall";
+            ParsingHelper helper = new ParsingHelper(text);
+            string s = helper.ParseTokenRegEx(@"\b[d]\w+");
+            Assert.AreEqual("dime", s);
+            Assert.AreEqual(36, helper.Index);
+
+            helper.Reset();
+            IEnumerable<string> results = helper.ParseTokensRegEx(@"\b[s]\w+");
+            CollectionAssert.AreEqual(new[] {
+                "summer",
+                "side",
+                "servant" }, results.ToList());
+            Assert.AreEqual(127, helper.Index);
+
+            helper.Reset();
+            s = helper.ParseTokenRegEx(@"\b[x]\w+");
+            Assert.AreEqual(string.Empty, s);
+            Assert.AreEqual(text.Length, helper.Index);
+
+            helper.Reset();
+            results = helper.ParseTokensRegEx(@"\b[x]\w+");
+            CollectionAssert.AreEqual(new List<string>(), results.ToList());
+            Assert.AreEqual(text.Length, helper.Index);
+
+            helper.Reset();
+            helper.SkipToRegEx(@"\b[a]\w+");
+            Assert.IsTrue(helper.MatchesCurrentPosition("attention"));
+
+            s = helper.ParseToRegEx(@"\b[r]\w+");
+            Assert.AreEqual("attention opinion ", s);
+            Assert.IsTrue(helper.MatchesCurrentPosition("railway "));
+        }
+
+        [TestMethod]
+        public void ParsingPositionTests()
+        {
+            ParsingPosition pos;
+            string text = "abc\r\ndef\rghi\nxyz";
+
+            List<(int Line, int Column)> values = new List<(int, int)>
+            {
+                (1, 1), // 0
+                (1, 2), // 1
+                (1, 3), // 2
+                (1, 4), // 3
+                (1, 5), // 4
+                (2, 1), // 5
+                (2, 2), // 6
+                (2, 3), // 7
+                (2, 4), // 8
+                (3, 1), // 9
+                (3, 2), // 10
+                (3, 3), // 11
+                (3, 4), // 12
+                (4, 1), // 13
+                (4, 2), // 14
+                (4, 3), // 15
+                (4, 4), // 16
+            };
+
+            for (int i = 0; i < values.Count; i++)
+            {
+                pos = ParsingPosition.CalculatePosition(text, i);
+                Assert.AreEqual(values[i].Line, pos.Line);
+                Assert.AreEqual(values[i].Column, pos.Column);
+            }
+
+            ParsingHelper helper = new ParsingHelper(text);
+            helper.SkipTo("ghi");
+            pos = helper.CalculatePosition();
+            Assert.AreEqual(3, pos.Line);
+            Assert.AreEqual(1, pos.Column);
         }
     }
 }
