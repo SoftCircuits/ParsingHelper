@@ -345,7 +345,7 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
         [TestMethod]
         public void ParsingPositionTests()
         {
-            ParsingPosition pos;
+            ParsePosition pos;
             string text = "abc\r\ndef\rghi\nxyz";
 
             List<(int Line, int Column)> values = new List<(int, int)>
@@ -371,7 +371,7 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
 
             for (int i = 0; i < values.Count; i++)
             {
-                pos = ParsingPosition.CalculatePosition(text, i);
+                pos = ParsePosition.CalculatePosition(text, i);
                 Assert.AreEqual(values[i].Line, pos.Line);
                 Assert.AreEqual(values[i].Column, pos.Column);
             }

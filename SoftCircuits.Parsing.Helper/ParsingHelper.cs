@@ -595,7 +595,7 @@ namespace SoftCircuits.Parsing.Helper
         /// Calculates the line and column of the current position.
         /// </summary>
         /// <returns>A <see cref="ParsingPosition"/> that represents the current position.</returns>
-        public ParsingPosition CalculatePosition() => ParsingPosition.CalculatePosition(Text, Index);
+        public ParsePosition CalculatePosition() => ParsePosition.CalculatePosition(Text, Index);
 
         #region Operator overloads
 
