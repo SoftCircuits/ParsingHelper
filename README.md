@@ -80,7 +80,7 @@ CollectionAssert.AreEqual(new[] { "v", "f", "d", "o" }, flags);
 
 #### Regular Expressions
 
-This example parses a name/value pair with some extra whitespace. Since the value has a space in it, it's enclosed in quotes. But the code would also correctly handle a value without quotes as long as it has no spaces. Note that the code doesn't need to test if the end of the string has been reached (which would happen, for example, if there was no equal sign). If the end of the string is reached, it won't cause any problems.
+This example uses a regular expression to find all the words in a string that start with the letter "J".
 
 ```cs
 ParsingHelper helper = new ParsingHelper("Jim Jack Sally Jennifer Bob Gary Jonathan Bill");
@@ -143,6 +143,10 @@ while (!helper.EndOfText)
     helper++;
 }
 ```
+
+## Tracking Line and Column Position
+
+For performance reasons, ParsingHelper does not track the current line and column values as it parses. However, you can use the `CalculatePosition()` method to obtain the line and column values that corresponds to the current position. This is useful for providing more information when reporting parsing errors back to the end user.
 
 ## Skipping to Characters
 
