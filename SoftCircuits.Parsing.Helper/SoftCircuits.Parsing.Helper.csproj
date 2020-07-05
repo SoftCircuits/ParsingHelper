@@ -7,7 +7,7 @@
     <Product>ParsingHelper</Product>
     <Copyright>Copyright © 2019-2020 SoftCircuits</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <PackageReleaseNotes>ParsingPosition renamed to ParsePosition (sorry); ParsePosition.CalculatePosition() now uses ParsingHelper to calculate the current line and column values.</PackageReleaseNotes>
+    <PackageReleaseNotes>Added ParseLine() method; Changed meaning of SkipToNextLine() return value: Before it returned false if the new position is at the end of the file. Now it returns true as long as a new line was found.</PackageReleaseNotes>
     <PackageTags>parse parser parsing text-parsing parsing-helper .net csharp tokenizer</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/SoftCircuits/ParsingHelper</RepositoryUrl>
@@ -15,7 +15,7 @@
     <Description>A .NET class library that makes it easier to parse text. The library tracks the current position within the text, ensures your code never attempts to access a character at an invalid index, and includes many methods that make parsing easier. The library makes your text-parsing code more concise and more robust. Now includes several methods that support regular expressions.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Version>2.0.1</Version>
+    <Version>2.0.2</Version>
     <PackageProjectUrl>https://github.com/SoftCircuits/ParsingHelper</PackageProjectUrl>
     <PackageIcon>Logo_64x64.png</PackageIcon>
     <PackageIconUrl />

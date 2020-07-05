@@ -238,22 +238,22 @@ namespace SoftCircuits.Parsing.Helper
 
         /// <summary>
         /// Moves the current position to the start of the next line. If no more
-        /// lines are found, this method moves to the end of the text being
+        /// new lines are found, this method moves to the end of the text being
         /// parsed and returns <c>false</c>.
         /// </summary>
-        /// <returns>Returns a Boolean value that indicates if the next line was
+        /// <returns>Returns a Boolean value that indicates if a new line was
         /// found.</returns>
         public bool SkipToNextLine()
         {
             // Move to start of next new line
-            SkipTo(NewLineCharacters);
+            bool result = SkipTo(NewLineCharacters);
             // Move past new line
             if (MatchesCurrentPosition(NewLineCharacters))
                 Next(NewLineCharacters.Length);
             else
                 Next();
-            // Next line found if not at end of text
-            return InternalIndex < Text.Length;
+            // Return true if new line was found
+            return result;
         }
 
         /// <summary>
@@ -476,6 +476,32 @@ namespace SoftCircuits.Parsing.Helper
                     yield return match.Value;
             }
             else Index = Text.Length;
+        }
+
+        /// <summary>
+        /// Parses the next line and returns <c>true</c> if there were any more lines. Otherwise,
+        /// return <c>false</c>. The current position is moved to the start of the next line.
+        /// </summary>
+        /// <param name="line">Returns the parsed line.</param>
+        /// <returns>True if another line was found; otherwise, false.</returns>
+        public bool ParseLine(out string line)
+        {
+            if (InternalIndex >= Text.Length)
+            {
+                line = string.Empty;
+                return false;
+            }
+
+            int start = InternalIndex;
+            SkipTo(NewLineCharacters);
+            // Extract this line
+            line = Text.Substring(start, InternalIndex - start);
+            // Move past new line
+            if (MatchesCurrentPosition(NewLineCharacters))
+                Next(NewLineCharacters.Length);
+            else
+                Next();
+            return true;
         }
 
         /// <summary>

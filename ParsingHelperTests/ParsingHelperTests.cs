@@ -343,10 +343,49 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
         }
 
         [TestMethod]
-        public void ParsingPositionTests()
+        public void ParseLineTests()
+        {
+            List<(string, List<string>)> tests = new List<(string, List<string>)>
+            {
+                ("a", new List<string>(new[] { "a" })),
+                ("ab", new List<string>(new[] { "ab" })),
+                ("abc", new List<string>(new[] { "abc" })),
+                ("abc\r", new List<string>(new[] { "abc" })),
+                ("abc\r\n", new List<string>(new[] { "abc" })),
+                ("abc\r\nd", new List<string>(new[] { "abc", "d" })),
+                ("abc\r\nde", new List<string>(new[] { "abc", "de" })),
+                ("abc\r\ndef", new List<string>(new[] { "abc", "def" })),
+                ("abc\r\ndef\n", new List<string>(new[] { "abc", "def" })),
+                ("abc\r\ndef\n\r", new List<string>(new[] { "abc", "def", "" })),
+                ("abc\r\ndef\n\rg", new List<string>(new[] { "abc", "def", "", "g" })),
+                ("abc\r\ndef\n\rgh", new List<string>(new[] { "abc", "def", "", "gh" })),
+                ("abc\r\ndef\n\rghi", new List<string>(new[] { "abc", "def", "", "ghi" })),
+                ("abc\r\ndef\n\rghi\n", new List<string>(new[] { "abc", "def", "", "ghi" })),
+                ("abc\r\ndef\n\rghi\nx", new List<string>(new[] { "abc", "def", "", "ghi", "x" })),
+                ("abc\r\ndef\n\rghi\nxy", new List<string>(new[] { "abc", "def", "", "ghi", "xy" })),
+                ("abc\r\ndef\n\rghi\nxyz", new List<string>(new[] { "abc", "def", "", "ghi", "xyz" })),
+                ("abc\r\ndef\n\rghi\nxyz\r", new List<string>(new[] { "abc", "def", "", "ghi", "xyz" })),
+                ("abc\r\ndef\n\rghi\nxyz\r\r", new List<string>(new[] { "abc", "def", "", "ghi", "xyz", "" })),
+            };
+
+            ParsingHelper helper = new ParsingHelper(null);
+            List<string> lines = new List<string>();
+
+            foreach (var test in tests)
+            {
+                helper.Reset(test.Item1);
+                lines.Clear();
+                while (helper.ParseLine(out string line))
+                    lines.Add(line);
+                CollectionAssert.AreEqual(test.Item2, lines);
+            }
+        }
+
+        [TestMethod]
+        public void ParsePositionTests()
         {
             ParsePosition pos;
-            string text = "abc\r\ndef\rghi\nxyz";
+            string text = "abc\r\ndef\rghi\nxyz\n";
 
             List<(int Line, int Column)> values = new List<(int, int)>
             {
@@ -367,6 +406,7 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
                 (4, 2), // 14
                 (4, 3), // 15
                 (4, 4), // 16
+                (5, 1), // 17
             };
 
             for (int i = 0; i < values.Count; i++)
