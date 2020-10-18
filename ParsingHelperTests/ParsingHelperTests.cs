@@ -221,23 +221,72 @@ people, for the people, shall not perish from the earth.";
         [TestMethod]
         public void QuotedTextTests()
         {
+            // Parse quoted text
             ParsingHelper helper = new ParsingHelper("He turned and said, \"Yes.\"");
             Assert.IsTrue(helper.SkipTo('"'));
             Assert.AreEqual("Yes.", helper.ParseQuotedText());
             Assert.AreEqual(helper.Text.Length, helper.Index);
             Assert.AreEqual(ParsingHelper.NullChar, helper.Peek());
 
+            // Include quotes in returned string
+            helper.Reset();
+            Assert.IsTrue(helper.SkipTo('"'));
+            Assert.AreEqual("\"Yes.\"", helper.ParseQuotedText(includeQuotes: true));
+            Assert.AreEqual(helper.Text.Length, helper.Index);
+            Assert.AreEqual(ParsingHelper.NullChar, helper.Peek());
+
+            // Pair of quotes escape
             helper = new ParsingHelper("He turned and said, \"I turned and said, \"\"Yes\"\".\"");
             Assert.IsTrue(helper.SkipTo('"'));
             Assert.AreEqual("I turned and said, \"Yes\".", helper.ParseQuotedText());
             Assert.AreEqual(helper.Text.Length, helper.Index);
             Assert.AreEqual(ParsingHelper.NullChar, helper.Peek());
 
+            // Includ quotes in returned string
+            helper.Reset();
+            Assert.IsTrue(helper.SkipTo('"'));
+            Assert.AreEqual("\"I turned and said, \"Yes\".\"", helper.ParseQuotedText(includeQuotes: true));
+            Assert.AreEqual(helper.Text.Length, helper.Index);
+            Assert.AreEqual(ParsingHelper.NullChar, helper.Peek());
+
+            // Pair of quotes escape
             helper = new ParsingHelper("He turned and said, 'I turned and said, ''Yes''.'");
             Assert.IsTrue(helper.SkipTo('\''));
             Assert.AreEqual("I turned and said, 'Yes'.", helper.ParseQuotedText());
             Assert.AreEqual(helper.Text.Length, helper.Index);
             Assert.AreEqual(ParsingHelper.NullChar, helper.Peek());
+
+            // Include quotes in returned string
+            helper.Reset();
+            Assert.IsTrue(helper.SkipTo('\''));
+            Assert.AreEqual("'I turned and said, 'Yes'.'", helper.ParseQuotedText(includeQuotes: true));
+            Assert.AreEqual(helper.Text.Length, helper.Index);
+            Assert.AreEqual(ParsingHelper.NullChar, helper.Peek());
+
+            // Pair of quote escape
+            helper = new ParsingHelper("Abc \"de\"\"f\"");
+            Assert.IsTrue(helper.SkipTo('"'));
+            Assert.AreEqual("de\"f", helper.ParseQuotedText());
+
+            // No escape character
+            helper.Reset();
+            Assert.IsTrue(helper.SkipTo('"'));
+            Assert.AreEqual("de", helper.ParseQuotedText(noEscapeChar: true));
+
+            // Ignored custom escape character
+            helper = new ParsingHelper("Abc \"de^\"f\"");
+            Assert.IsTrue(helper.SkipTo('"'));
+            Assert.AreEqual("de^", helper.ParseQuotedText());
+
+            // Custom escape character
+            helper.Reset();
+            Assert.IsTrue(helper.SkipTo('"'));
+            Assert.AreEqual("de\"f", helper.ParseQuotedText(escapeChar: '^'));
+
+            // Stand-alone custom escape character
+            helper = new ParsingHelper("Abc \"de^f\"");
+            Assert.IsTrue(helper.SkipTo('"'));
+            Assert.AreEqual("de^f", helper.ParseQuotedText('^'));
         }
 
         [TestMethod]
