@@ -271,9 +271,14 @@ people, for the people, shall not perish from the earth.";
             Assert.AreEqual(ParsingHelper.NullChar, helper.Peek());
 
             // Pair of quote escape
-            helper = new ParsingHelper("Abc \"de\"\"f\"");
+            helper = new ParsingHelper(" Abc \"de\"\"f\" ");
             Assert.IsTrue(helper.SkipTo('"'));
             Assert.AreEqual("de\"f", helper.ParseQuotedText());
+
+            // Explicit pair of quote escape
+            helper = new ParsingHelper(" Abc \"de\"\"f\" ");
+            Assert.IsTrue(helper.SkipTo('"'));
+            Assert.AreEqual("de\"f", helper.ParseQuotedText(escapeChar: '"'));
 
             // No escape character
             helper.Reset();
@@ -281,7 +286,7 @@ people, for the people, shall not perish from the earth.";
             Assert.AreEqual("de", helper.ParseQuotedText(noEscapeChar: true));
 
             // Ignored custom escape character
-            helper = new ParsingHelper("Abc \"de^\"f\"");
+            helper = new ParsingHelper(" Abc \"de^\"f\" ");
             Assert.IsTrue(helper.SkipTo('"'));
             Assert.AreEqual("de^", helper.ParseQuotedText());
 
@@ -291,7 +296,7 @@ people, for the people, shall not perish from the earth.";
             Assert.AreEqual("de\"f", helper.ParseQuotedText(escapeChar: '^'));
 
             // Stand-alone custom escape character
-            helper = new ParsingHelper("Abc \"de^f\"");
+            helper = new ParsingHelper(" Abc \"de^f\" ");
             Assert.IsTrue(helper.SkipTo('"'));
             Assert.AreEqual("de^f", helper.ParseQuotedText('^'));
         }

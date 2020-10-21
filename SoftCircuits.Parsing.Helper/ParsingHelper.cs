@@ -318,11 +318,16 @@ namespace SoftCircuits.Parsing.Helper
         /// <param name="s">String to parse until.</param>
         /// <param name="comparison">One of the enumeration values that specifies the rules for
         /// search.</param>
+        /// <param name="includeToken">If true, the string being sought, if found, is also parsed.</param>
         /// <returns>A string with the parsed characters.</returns>
-        public string ParseTo(string s, StringComparison comparison = StringComparison.Ordinal)
+        public string ParseTo(string s, StringComparison comparison = StringComparison.Ordinal, bool includeToken = false)
         {
             int start = InternalIndex;
             SkipTo(s, comparison);
+
+            if (includeToken && !EndOfText)
+                Index += s.Length;
+
             return Extract(start, InternalIndex);
         }
 
@@ -337,6 +342,30 @@ namespace SoftCircuits.Parsing.Helper
         {
             int start = InternalIndex;
             SkipToRegEx(regularExpression);
+            return Extract(start, InternalIndex);
+        }
+
+        /// <summary>
+        /// Parses characters until the next newline character. If no new line characters are found,
+        /// this method parses all characters to the end of the input text.
+        /// </summary>
+        /// <returns>A string with the parsed characters.</returns>
+        public string ParseToEndOfLine()
+        {
+            int start = InternalIndex;
+            SkipToEndOfLine();
+            return Extract(start, InternalIndex);
+        }
+
+        /// <summary>
+        /// Parses characters until the start of the next line. If no more new lines are found, this
+        /// method parses all characters to the end of the input text.
+        /// </summary>
+        /// <returns>A string with the parsed characters.</returns>
+        public string ParseToNextLine()
+        {
+            int start = InternalIndex;
+            SkipToNextLine();
             return Extract(start, InternalIndex);
         }
 
@@ -552,7 +581,7 @@ namespace SoftCircuits.Parsing.Helper
             // Parse quoted text
             if (noEscapeChar)
                 ParseQuotedTextNoEscape(builder, quote);
-            else if (escapeChar != NullChar)
+            else if (escapeChar != NullChar && escapeChar != quote)
                 ParseQuotedTextCustomEscape(builder, quote, escapeChar);
             else
                 ParseQuotedTextTwoQuotesEscape(builder, quote);
