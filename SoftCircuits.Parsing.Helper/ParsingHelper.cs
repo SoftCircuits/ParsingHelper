@@ -266,6 +266,22 @@ namespace SoftCircuits.Parsing.Helper
         public string Parse(params char[] chars) => ParseWhile(chars.Contains);
 
         /// <summary>
+        /// Returns the next available character and increments the current position.
+        /// Returns an empty string if the current position is already at the end of
+        /// the input text.
+        /// </summary>
+        /// <returns>A string that contains the next available character.</returns>
+        public string ParseCharacter()
+        {
+            if (EndOfText)
+                return string.Empty;
+
+            char c = Peek();
+            Next();
+            return c.ToString();
+        }
+
+        /// <summary>
         /// Parses characters until a character is encountered that causes
         /// <paramref name="predicate"/> to return <c>false</c> and returns the parsed
         /// characters. Can return an empty string.

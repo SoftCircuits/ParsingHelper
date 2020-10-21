@@ -216,6 +216,13 @@ people, for the people, shall not perish from the earth.";
 
             helper.Reset();
             CollectionAssert.AreEqual(parseAllResults, helper.ParseTokens(c => " \t\r\n.".Contains(c)).ToList());
+
+            // ParseCharacter
+            helper.Reset("abc");
+            Assert.AreEqual("a", helper.ParseCharacter());
+            Assert.AreEqual("b", helper.ParseCharacter());
+            Assert.AreEqual("c", helper.ParseCharacter());
+            Assert.AreEqual("", helper.ParseCharacter());
         }
 
         [TestMethod]
