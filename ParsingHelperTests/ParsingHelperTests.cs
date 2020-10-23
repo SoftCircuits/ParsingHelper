@@ -114,9 +114,13 @@ people, for the people, shall not perish from the earth.";
             ParsingHelper helper = new ParsingHelper(LongTest);
 
             // SkipTo
-            Assert.IsTrue(helper.SkipToRegEx("score"));
+            Assert.IsTrue(helper.SkipTo("score"));
             Assert.AreEqual('s', helper.Peek());
             Assert.AreEqual('c', helper.Peek(1));
+            helper.Reset();
+            Assert.IsTrue(helper.SkipTo("score", includeToken: true));
+            Assert.AreEqual(' ', helper.Peek());
+            Assert.AreEqual('a', helper.Peek(1));
             helper.Reset();
             Assert.IsTrue(helper.SkipTo("SCORE", StringComparison.OrdinalIgnoreCase));
             Assert.AreEqual('s', helper.Peek());
@@ -125,7 +129,7 @@ people, for the people, shall not perish from the earth.";
             Assert.IsTrue(helper.SkipTo('v'));
             Assert.AreEqual('v', helper.Peek());
             Assert.AreEqual('e', helper.Peek(1));
-            Assert.IsFalse(helper.SkipToRegEx("XxXxXxX"));
+            Assert.IsFalse(helper.SkipTo("XxXxXxX"));
             Assert.AreEqual(LongTest.Length, helper.Index);
             Assert.AreEqual(true, helper.EndOfText);
             Assert.AreEqual(0, helper.Remaining);
@@ -173,29 +177,29 @@ people, for the people, shall not perish from the earth.";
         {
             ParsingHelper helper = new ParsingHelper(LongTest);
 
-            Assert.IsTrue(helper.SkipToRegEx("score"));
+            Assert.IsTrue(helper.SkipTo("score"));
             Assert.AreEqual("score and seven years ago our ", helper.ParseTo("fathers"));
             Assert.AreEqual('f', helper.Peek());
 
             helper.Reset();
-            Assert.IsTrue(helper.SkipToRegEx("score"));
+            Assert.IsTrue(helper.SkipTo("score"));
             Assert.AreEqual("score and seven years ago our ", helper.ParseTo("FATHERS", StringComparison.OrdinalIgnoreCase));
             Assert.AreEqual('f', helper.Peek());
 
             helper.Reset();
-            Assert.IsTrue(helper.SkipToRegEx("score"));
+            Assert.IsTrue(helper.SkipTo("score"));
             Assert.AreEqual("score and se", helper.ParseTo('v', 'X', 'Y', 'Z'));
             Assert.AreEqual('v', helper.Peek());
 
             helper.Reset();
-            Assert.IsTrue(helper.SkipToRegEx("score"));
+            Assert.IsTrue(helper.SkipTo("score"));
             Assert.AreEqual("score", helper.Parse('e', 'r', 'o', 'c', 's'));
             Assert.AreEqual(' ', helper.Peek());
             Assert.AreEqual(" ", helper.Parse(' '));
             Assert.AreEqual('a', helper.Peek());
 
             helper.Reset();
-            Assert.IsTrue(helper.SkipToRegEx("score"));
+            Assert.IsTrue(helper.SkipTo("score"));
             Assert.AreEqual("score and seven years ago our fathers brought forth on this continent", helper.ParseWhile(c => c != ','));
             Assert.AreEqual(',', helper.Peek());
 
@@ -311,13 +315,17 @@ people, for the people, shall not perish from the earth.";
             Assert.IsTrue(helper.SkipTo('"'));
             Assert.AreEqual("\"te\\\"st.\"", helper.ParseQuotedText('\\', true, true));
             Assert.AreEqual(' ', helper.Peek());
+
+            // Handles end of text
+            helper.Reset("");
+            Assert.AreEqual(string.Empty, helper.ParseQuotedText('\"', true, true));
         }
 
         [TestMethod]
         public void MatchesCurrentPositionTests()
         {
             ParsingHelper helper = new ParsingHelper(LongTest);
-            Assert.IsTrue(helper.SkipToRegEx("consecrated it"));
+            Assert.IsTrue(helper.SkipTo("consecrated it"));
             Assert.AreEqual(true, helper.MatchesCurrentPosition("consecrated it"));
             Assert.AreEqual(true, helper.MatchesCurrentPosition("CONSECRATED IT", StringComparison.OrdinalIgnoreCase));
             Assert.AreEqual(false, helper.MatchesCurrentPosition("consecrated_it"));
@@ -329,7 +337,7 @@ people, for the people, shall not perish from the earth.";
         {
             ParsingHelper helper = new ParsingHelper(LongTest);
             string s = "consecrated it";
-            Assert.IsTrue(helper.SkipToRegEx(s));
+            Assert.IsTrue(helper.SkipTo(s));
             int start = helper.Index;
             helper.Next(s.Length);
             Assert.AreEqual(s, helper.Extract(start, helper.Index));
@@ -413,6 +421,10 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
             s = helper.ParseToRegEx(@"\b[r]\w+");
             Assert.AreEqual("attention opinion ", s);
             Assert.IsTrue(helper.MatchesCurrentPosition("railway "));
+
+            helper.Reset();
+            helper.SkipToRegEx(@"\b[a]\w+", true);
+            Assert.IsTrue(helper.MatchesCurrentPosition(" opinion"));
         }
 
         [TestMethod]
