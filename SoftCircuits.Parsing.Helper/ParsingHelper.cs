@@ -553,20 +553,11 @@ namespace SoftCircuits.Parsing.Helper
         /// Parses quoted text. Interprets the character at the current position as the starting quote
         /// character and parses text up until the matching ending quote character. Returns the parsed
         /// text without the quotes and sets the current position to the character following the
-        /// ending quote.
+        /// ending quote. If the text contains two quote characters together the pair is handled as a
+        /// single quote literal and not the end of the quoted text.
         /// </summary>
-        /// <param name="escapeChar">Character that 'escapes' the quote character. If specified, this
-        /// character immediately followed by the quote character will be interpreted as a single quote
-        /// literal and not the end of the quoted text. If not specified, the quote character is escaped
-        /// when two quotes characters appear together. This parameter is ignored if
-        /// <paramref name="noEscapeChar"/> is <c>true</c>.</param>
-        /// <param name="noEscapeChar">If <c>true</c>, no escape characters are supported.
-        /// <paramref name="escapeChar"/> is ignored and any single occurrence of the quote character
-        /// terminates the quoted text.</param>
-        /// <param name="includeQuotes">If <c>true</c>, the quote characters are included in the returned
-        /// string.</param>
         /// <returns>Returns the text within the quotes.</returns>
-        public string ParseQuotedText(char escapeChar = NullChar, bool noEscapeChar = false, bool includeQuotes = false )
+        public string ParseQuotedText()
         {
             StringBuilder builder = new StringBuilder();
 
@@ -574,30 +565,7 @@ namespace SoftCircuits.Parsing.Helper
             char quote = Peek();
             Next();
 
-            // Add opening quote if requested
-            if (includeQuotes)
-                builder.Append(quote);
-
             // Parse quoted text
-            if (noEscapeChar)
-                ParseQuotedTextNoEscape(builder, quote);
-            else if (escapeChar != NullChar && escapeChar != quote)
-                ParseQuotedTextCustomEscape(builder, quote, escapeChar);
-            else
-                ParseQuotedTextTwoQuotesEscape(builder, quote);
-
-            // Add closing quote if requested
-            if (includeQuotes && Peek(-1) == quote)
-                builder.Append(quote);
-
-            return builder.ToString();
-        }
-
-        /// <summary>
-        /// Parses quoted text using two quote characters as an escape.
-        /// </summary>
-        private void ParseQuotedTextTwoQuotesEscape(StringBuilder builder, char quote)
-        {
             while (!EndOfText)
             {
                 // Parse to next quote
@@ -612,44 +580,98 @@ namespace SoftCircuits.Parsing.Helper
                 }
                 else break; // Done if single closing quote or end of text
             }
+            return builder.ToString();
         }
 
         /// <summary>
-        /// Parses quoted text using a custom escape character.
+        /// Parses quoted text with options. Interprets the character at the current position as the
+        /// starting quote character and parses text up until the matching ending quote character.
+        /// Returns the parsed text without the quotes and sets the current position to the character
+        /// following the ending quote.
         /// </summary>
-        private void ParseQuotedTextCustomEscape(StringBuilder builder, char quote, char escapeChar)
+        /// <param name="escapeChar">Specifies an escape character. If this character is immediately
+        /// followed by a quote character, the pair is handled as a single quote literal and not the end
+        /// of the quoted text. Set to null for no escape character, in which case the string is
+        /// terminated at the next quote character. This parameter can be the same as the quote
+        /// character.</param>
+        /// <param name="includeEscapeChar">Specifies if the escape characters should be included in
+        /// the returned string.</param>
+        /// <param name="includeQuotes">Specifies if the enclosing quotes should be included in the
+        /// returned string.</param>
+        /// <returns>Returns the text within the quotes.</returns>
+        public string ParseQuotedText(char? escapeChar, bool includeEscapeChar = false, bool includeQuotes = false)
         {
-            while (!EndOfText)
+            StringBuilder builder = new StringBuilder();
+
+            // Get and skip quote character
+            char quote = Peek();
+            Next();
+
+            // Add opening quote if requested
+            if (includeQuotes)
+                builder.Append(quote);
+
+            // Parse quoted text
+            if (escapeChar == null)
             {
-                // Parse to next quote or escape character
-                builder.Append(ParseTo(quote, escapeChar));
-                char found = Peek();
-                // Skip character
+                // No escape character
+                builder.Append(ParseTo(quote));
                 Next();
-                // Quote following escape character treated as quote literal
-                if (found == escapeChar)
+            }
+            else if (escapeChar != quote)
+            {
+                // Custom escape character
+                while (!EndOfText)
                 {
+                    // Parse to next quote or escape character
+                    builder.Append(ParseTo(quote, escapeChar.Value));
+                    char found = Peek();
+                    // Skip character
+                    Next();
+                    // Quote following escape character treated as quote literal
+                    if (found == escapeChar.Value)
+                    {
+                        if (Peek() == quote)
+                        {
+                            if (includeEscapeChar)
+                                builder.Append(escapeChar.Value);
+                            builder.Append(quote);
+                            Next();
+                        }
+                        else
+                        {
+                            builder.Append(found);
+                        }
+                    }
+                    else break; // Done if single closing quote or end of text
+                }
+            }
+            else
+            {
+                // Two quotes escapes
+                while (!EndOfText)
+                {
+                    // Parse to next quote
+                    builder.Append(ParseTo(quote));
+                    // Skip quote
+                    Next();
+                    // Two consecutive quotes treated as quote literal
                     if (Peek() == quote)
                     {
+                        if (includeEscapeChar)
+                            builder.Append(quote);
                         builder.Append(quote);
                         Next();
                     }
-                    else
-                    {
-                        builder.Append(found);
-                    }
+                    else break; // Done if single closing quote or end of text
                 }
-                else break; // Done if single closing quote or end of text
             }
-        }
 
-        /// <summary>
-        /// Parses quoted text. No escape characters.
-        /// </summary>
-        private void ParseQuotedTextNoEscape(StringBuilder builder, char quote)
-        {
-            builder.Append(ParseTo(quote));
-            Next();
+            // Add closing quote if requested
+            if (includeQuotes && Peek(-1) == quote)
+                builder.Append(quote);
+
+            return builder.ToString();
         }
 
         /// <summary>
