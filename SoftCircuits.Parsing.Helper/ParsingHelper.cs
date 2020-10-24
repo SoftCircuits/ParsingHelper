@@ -17,9 +17,9 @@ namespace SoftCircuits.Parsing.Helper
     public class ParsingHelper
     {
         /// <summary>
-        /// Characters that make up line breaks.
+        /// Characters that make up a line break.
         /// </summary>
-        private static readonly char[] NewLineCharacters = new[] { '\r', '\n' };
+        private static readonly char[] LineBreakCharacters = new[] { '\r', '\n' };
 
         private int InternalIndex;
 
@@ -139,7 +139,6 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>A <see cref="ParsingPosition"/> that represents the current position.</returns>
         public ParsePosition CalculatePosition() => ParsePosition.CalculatePosition(Text, Index);
 
-
         #region Skip characters
 
         /// <summary>
@@ -178,9 +177,9 @@ namespace SoftCircuits.Parsing.Helper
         public void SkipWhiteSpace(SkipWhiteSpaceOption option)
         {
             Debug.Assert(option == SkipWhiteSpaceOption.StopAtEol || option == SkipWhiteSpaceOption.StopAtNextLine);
-            SkipWhile(c => char.IsWhiteSpace(c) && !NewLineCharacters.Contains(c));
-            if (option == SkipWhiteSpaceOption.StopAtNextLine)
-                SkipToNextLine();
+            SkipWhile(c => char.IsWhiteSpace(c) && !LineBreakCharacters.Contains(c));
+            if (LineBreakCharacters.Contains(Peek()) && option == SkipWhiteSpaceOption.StopAtNextLine)
+                SkipLineBreak();
         }
 
         #endregion
@@ -256,7 +255,7 @@ namespace SoftCircuits.Parsing.Helper
         /// are found, this method moves to the end of the text being parsed and returns <c>false</c>.
         /// </summary>
         /// <returns>True if any line break characters were found.</returns>
-        public bool SkipToEndOfLine() => SkipTo(NewLineCharacters);
+        public bool SkipToEndOfLine() => SkipTo(LineBreakCharacters);
 
         /// <summary>
         /// Moves the current position to the start of the next line. If no more line break characters
@@ -265,15 +264,25 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>True if any more line break characters were found.</returns>
         public bool SkipToNextLine()
         {
-            // Move to start of next new line
-            bool result = SkipTo(NewLineCharacters);
-            // Move past new line
-            if (MatchesCurrentPosition(NewLineCharacters))
-                Next(NewLineCharacters.Length);
-            else
-                Next();
+            // Move to next line break character
+            bool result = SkipToEndOfLine();
+            // Move past line break
+            SkipLineBreak();
             // Return true if line break characters were found
             return result;
+        }
+
+        /// <summary>
+        /// Skips over a line break. Current position must be at the first line break character or
+        /// the end of the text being parsed.
+        /// </summary>
+        private void SkipLineBreak()
+        {
+            Debug.Assert(EndOfText || LineBreakCharacters.Contains(Peek()));
+            if (MatchesCurrentPosition(LineBreakCharacters))
+                Next(LineBreakCharacters.Length);
+            else
+                Next();
         }
 
         #endregion
@@ -331,11 +340,13 @@ namespace SoftCircuits.Parsing.Helper
                 line = string.Empty;
                 return false;
             }
+
             int start = InternalIndex;
             SkipToEndOfLine();
             // Extract this line
             line = Text.Substring(start, InternalIndex - start);
-            SkipToNextLine();
+            // Move to start of next line
+            SkipLineBreak();
             return true;
         }
 

@@ -147,6 +147,18 @@ people, for the people, shall not perish from the earth.";
             helper2.Reset();
             helper2.SkipWhiteSpace(SkipWhiteSpaceOption.StopAtNextLine);
             Assert.IsTrue(helper2.MatchesCurrentPosition("xyz"));
+            helper2.Reset("    \rxyz ");
+            helper2.SkipWhiteSpace(SkipWhiteSpaceOption.StopAtEol);
+            Assert.IsTrue(helper2.MatchesCurrentPosition("\rxyz"));
+            helper2.Reset("    \nxyz ");
+            helper2.SkipWhiteSpace(SkipWhiteSpaceOption.StopAtNextLine);
+            Assert.IsTrue(helper2.MatchesCurrentPosition("xyz"));
+            helper2.Reset("    xyz");
+            helper2.SkipWhiteSpace(SkipWhiteSpaceOption.StopAtEol);
+            Assert.IsTrue(helper2.MatchesCurrentPosition("xyz"));
+            helper2.Reset();
+            helper2.SkipWhiteSpace(SkipWhiteSpaceOption.StopAtNextLine);
+            Assert.IsTrue(helper2.MatchesCurrentPosition("xyz"));
 
             // SkipWhile
             helper.SkipWhile(c => "score".Contains(c));
