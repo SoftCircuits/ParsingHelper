@@ -10,7 +10,7 @@ namespace SoftCircuits.Parsing.Helper
     public class ParsingPosition : ParsePosition { }
 
     /// <summary>
-    /// Represents a line and column position within text being parsed.
+    /// Represents a line and column position within a string.
     /// </summary>
     public class ParsePosition
     {
@@ -35,7 +35,8 @@ namespace SoftCircuits.Parsing.Helper
         /// </summary>
         /// <param name="text">The text to calculate the position for.</param>
         /// <param name="index">The position as an index into <paramref name="text"/>.</param>
-        /// <returns>A <see cref="ParsingPosition"/> with the calculated position.</returns>
+        /// <returns>A <see cref="ParsingPosition"/> with the calculated line and column
+        /// positions.</returns>
         public static ParsePosition CalculatePosition(string text, int index)
         {
             ParsingHelper helper = new ParsingHelper(text);

@@ -11,12 +11,12 @@ namespace SoftCircuits.Parsing.Helper
     public enum SkipWhiteSpaceOption
     {
         /// <summary>
-        /// Stop at the first new-line character.
+        /// Stop if a line line break character is found.
         /// </summary>
         StopAtEol,
 
         /// <summary>
-        /// Stop at the start of the next line.
+        /// Stop if the start of a new line is found.
         /// </summary>
         StopAtNextLine
     }

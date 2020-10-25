@@ -340,8 +340,16 @@ people, for the people, shall not perish from the earth.";
             Assert.IsTrue(helper.SkipTo("consecrated it"));
             Assert.AreEqual(true, helper.MatchesCurrentPosition("consecrated it"));
             Assert.AreEqual(true, helper.MatchesCurrentPosition("CONSECRATED IT", StringComparison.OrdinalIgnoreCase));
+            Assert.AreEqual(false, helper.MatchesCurrentPosition(string.Empty));
+            Assert.AreEqual(false, helper.MatchesCurrentPosition(string.Empty, StringComparison.OrdinalIgnoreCase));
             Assert.AreEqual(false, helper.MatchesCurrentPosition("consecrated_it"));
             Assert.AreEqual(false, helper.MatchesCurrentPosition("CONSECRATED_IT", StringComparison.OrdinalIgnoreCase));
+            helper.Index = LongTest.Length - 1;
+            Assert.AreEqual(false, helper.MatchesCurrentPosition("consecrated it"));
+            Assert.AreEqual(false, helper.MatchesCurrentPosition("CONSECRATED IT", StringComparison.OrdinalIgnoreCase));
+            helper.Index = LongTest.Length;
+            Assert.AreEqual(false, helper.MatchesCurrentPosition("consecrated it"));
+            Assert.AreEqual(false, helper.MatchesCurrentPosition("CONSECRATED IT", StringComparison.OrdinalIgnoreCase));
         }
 
         [TestMethod]

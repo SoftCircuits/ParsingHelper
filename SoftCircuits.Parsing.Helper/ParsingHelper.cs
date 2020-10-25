@@ -71,11 +71,11 @@ namespace SoftCircuits.Parsing.Helper
             get => InternalIndex;
             set
             {
-                if (value < 0)
-                    value = 0;
-                else if (value > Text.Length)
-                    value = Text.Length;
                 InternalIndex = value;
+                if (InternalIndex < 0)
+                    InternalIndex = 0;
+                else if (InternalIndex > Text.Length)
+                    InternalIndex = Text.Length;
             }
         }
 
@@ -83,13 +83,13 @@ namespace SoftCircuits.Parsing.Helper
         /// Returns <c>true</c> if the current position is at the end of the text being parsed.
         /// Otherwise, false.
         /// </summary>
-        public bool EndOfText => InternalIndex >= Text.Length;
+        public bool EndOfText => (InternalIndex >= Text.Length);
 
         /// <summary>
         /// Returns the number of characters not yet parsed. This is equal to the length
         /// of the text being parsed, minus the current position.
         /// </summary>
-        public int Remaining => Text.Length - InternalIndex;
+        public int Remaining => (Text.Length - InternalIndex);
 
         /// <summary>
         /// Returns the character at the current position, or <see cref="NullChar"/>
@@ -134,7 +134,7 @@ namespace SoftCircuits.Parsing.Helper
         public void Next(int count) => Index = InternalIndex + count;
 
         /// <summary>
-        /// Calculates the line and column of the current position.
+        /// Calculates the line and column information for the current position.
         /// </summary>
         /// <returns>A <see cref="ParsingPosition"/> that represents the current position.</returns>
         public ParsePosition CalculatePosition() => ParsePosition.CalculatePosition(Text, Index);
@@ -142,8 +142,8 @@ namespace SoftCircuits.Parsing.Helper
         #region Skip characters
 
         /// <summary>
-        /// Moves the current position to the next character for which <paramref name="predicate"/>
-        /// returns <c>false</c>.
+        /// Moves the current position to the next character that causes <paramref name="predicate"/>
+        /// to return <c>false</c>.
         /// </summary>
         /// <param name="predicate">Function to return test each character and return <c>true</c>
         /// for each character that should be skipped.</param>
@@ -162,23 +162,21 @@ namespace SoftCircuits.Parsing.Helper
         public void Skip(params char[] chars) => SkipWhile(chars.Contains);
 
         /// <summary>
-        /// Moves the current position to the next non-whitespace character.
+        /// Moves the current position to the next character that is not a whitespace character.
         /// </summary>
-        public void SkipWhiteSpace()
-        {
-            SkipWhile(char.IsWhiteSpace);
-        }
+        public void SkipWhiteSpace() => SkipWhile(char.IsWhiteSpace);
 
         /// <summary>
-        /// Moves the current position to the next non-whitespace character with options
-        /// to stop at the next line break or next line.
+        /// Moves the current position to the next character that is not a whitespace character,
+        /// with an option to stop sooner under a specified condition.
         /// </summary>
-        /// <param name="option"></param>
+        /// <param name="option">Specifies a condition where skipping should stop before a
+        /// whitespace character is found.</param>
         public void SkipWhiteSpace(SkipWhiteSpaceOption option)
         {
             Debug.Assert(option == SkipWhiteSpaceOption.StopAtEol || option == SkipWhiteSpaceOption.StopAtNextLine);
             SkipWhile(c => char.IsWhiteSpace(c) && !LineBreakCharacters.Contains(c));
-            if (LineBreakCharacters.Contains(Peek()) && option == SkipWhiteSpaceOption.StopAtNextLine)
+            if (option == SkipWhiteSpaceOption.StopAtNextLine && LineBreakCharacters.Contains(Peek()))
                 SkipLineBreak();
         }
 
@@ -187,9 +185,10 @@ namespace SoftCircuits.Parsing.Helper
         #region Skip to characters
 
         /// <summary>
-        /// Moves the current position to the next occurrence of any one of the specified characters and returns
-        /// <c>true</c> if successful. If none of the specified characters are found, this method moves the
-        /// current position to the end of the text being parsed and returns <c>false</c>.
+        /// Moves the current position to the next character that is one of the specified characters
+        /// and returns <c>true</c> if a match was found. If none of the specified characters are
+        /// found, this method moves the current position to the end of the text being parsed and
+        /// returns <c>false</c>.
         /// </summary>
         /// <param name="chars">Characters to skip to.</param>
         /// <returns>True if any of the specified characters were found. Otherwise, false.</returns>
@@ -204,16 +203,38 @@ namespace SoftCircuits.Parsing.Helper
 
         /// <summary>
         /// Moves the current position to the next occurrence of the specified string and returns
-        /// <c>true</c> if successful. If the specified string is not found, this method moves the
-        /// current position to the end of the text being parsed and returns <c>false</c>.
+        /// <c>true</c> if a match was found. If the specified string is not found, this method
+        /// moves the current position to the end of the text being parsed and returns <c>false</c>.
         /// </summary>
-        /// <param name="s">Text to skip to.</param>
+        /// <param name="s">String to skip to.</param>
+        /// <param name="includeToken">If <c>true</c> and a match is found, the matching string is
+        /// also skipped.</param>
+        /// <returns>True if the specified string was found. Otherwise, false.</returns>
+        public bool SkipTo(string s, bool includeToken = false)
+        {
+            InternalIndex = Text.IndexOf(s, InternalIndex);
+            if (InternalIndex >= 0)
+            {
+                if (includeToken)
+                    InternalIndex += s.Length;
+                return true;
+            }
+            InternalIndex = Text.Length;
+            return false;
+        }
+
+        /// <summary>
+        /// Moves the current position to the next occurrence of the specified string and returns
+        /// <c>true</c> if a match was found. If the specified string is not found, this method
+        /// moves the current position to the end of the text being parsed and returns <c>false</c>.
+        /// </summary>
+        /// <param name="s">String to skip to.</param>
         /// <param name="comparison">One of the enumeration values that specifies the rules for
         /// search.</param>
         /// <param name="includeToken">If <c>true</c> and a match is found, the matching text is
         /// also skipped.</param>
         /// <returns>True if the specified string was found. Otherwise, false.</returns>
-        public bool SkipTo(string s, StringComparison comparison = StringComparison.Ordinal, bool includeToken = false)
+        public bool SkipTo(string s, StringComparison comparison, bool includeToken = false)
         {
             InternalIndex = Text.IndexOf(s, InternalIndex, comparison);
             if (InternalIndex >= 0)
@@ -228,7 +249,7 @@ namespace SoftCircuits.Parsing.Helper
 
         /// <summary>
         /// Moves the current position to the start of the next text that matches the given regular
-        /// expression and returns <c>true</c> if successful. If no match is found, this method
+        /// expression and returns <c>true</c> if a match was found. If no match is found, this method
         /// moves the current position to the end of the text being parsed and returns <c>false</c>.
         /// </summary>
         /// <param name="regularExpression">A regular expression that the text must match.</param>
@@ -251,15 +272,17 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
-        /// Moves the current position to the next line break character. If no line break characters
-        /// are found, this method moves to the end of the text being parsed and returns <c>false</c>.
+        /// Moves the current position to the next line break character and returns true if a line-break
+        /// character was found. If no line break characters are found, this method moves to the end of
+        /// the text being parsed and returns <c>false</c>.
         /// </summary>
-        /// <returns>True if any line break characters were found.</returns>
+        /// <returns>True if a line break character was found. Otherwise, false.</returns>
         public bool SkipToEndOfLine() => SkipTo(LineBreakCharacters);
 
         /// <summary>
-        /// Moves the current position to the start of the next line. If no more line break characters
-        /// are found, this method moves to the end of the text being parsed and returns <c>false</c>.
+        /// Moves the current position to the start of the next line and returns true if a line-break
+        /// character was found. If no more line break characters are found, this method moves to the
+        /// end of the text being parsed and returns <c>false</c>.
         /// </summary>
         /// <returns>True if any more line break characters were found.</returns>
         public bool SkipToNextLine()
@@ -290,6 +313,21 @@ namespace SoftCircuits.Parsing.Helper
         #region Parse characters
 
         /// <summary>
+        /// Parses a single character and increments the current position. Returns an empty string
+        /// if the current position was at the end of the text being parsed.
+        /// </summary>
+        /// <returns>A string that contains the parsed character, or an empty string if the current
+        /// position was at the end of the text being parsed.</returns>
+        public string ParseCharacter()
+        {
+            if (EndOfText)
+                return string.Empty;
+            char c = Peek();
+            Next();
+            return c.ToString();
+        }
+
+        /// <summary>
         /// Parses characters until the next character for which <paramref name="predicate"/>
         /// returns <c>false</c>, and returns the parsed characters. Can return an empty string.
         /// </summary>
@@ -304,21 +342,6 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
-        /// Parses a single character and increments the current position. Returns an empty string
-        /// if the current position is already at the end of the text being parsed.
-        /// </summary>
-        /// <returns>A string that contains the parsed character, or an empty string if the end of
-        /// the text being parsed was reached.</returns>
-        public string ParseCharacter()
-        {
-            if (EndOfText)
-                return string.Empty;
-            char c = Peek();
-            Next();
-            return c.ToString();
-        }
-
-        /// <summary>
         /// Parses characters until the next character that is not contained in
         /// <paramref name="chars"/>, and returns a string with the parsed characters.
         /// Can return an empty string.
@@ -328,11 +351,13 @@ namespace SoftCircuits.Parsing.Helper
         public string Parse(params char[] chars) => ParseWhile(chars.Contains);
 
         /// <summary>
-        /// Parses the next line and returns <c>true</c> if there were any more lines. Otherwise,
-        /// return <c>false</c>. The current position is moved to the start of the next line.
+        /// Parses the next line of text and returns <c>true</c> if successful. Returns false if
+        /// the current position was at the end of the text being parsed. The current position is
+        /// moved past the line-break characters to the start of the following line.
         /// </summary>
-        /// <param name="line">Returns the parsed line.</param>
-        /// <returns>True if another line was found; otherwise, false.</returns>
+        /// <param name="line">Receives the parsed line.</param>
+        /// <returns>True if successful; otherwise, false if the current position was at the end
+        /// of the text being parsed.</returns>
         public bool ParseLine(out string line)
         {
             if (EndOfText)
@@ -344,17 +369,17 @@ namespace SoftCircuits.Parsing.Helper
             int start = InternalIndex;
             SkipToEndOfLine();
             // Extract this line
-            line = Text.Substring(start, InternalIndex - start);
+            line = Extract(start, InternalIndex);
             // Move to start of next line
             SkipLineBreak();
             return true;
         }
 
         /// <summary>
-        /// Parses quoted text. Interprets the character at the current position as the starting quote
-        /// character and parses text up until the matching ending quote character. Returns the parsed
+        /// Parses quoted text. The character at the current position is assumed to be the starting quote
+        /// character. This method parses text up until the matching end quote character. Returns the parsed
         /// text without the quotes and sets the current position to the character following the
-        /// ending quote. If the text contains two quote characters together the pair is handled as a
+        /// end quote. If the text contains two quote characters together, the pair is handled as a
         /// single quote literal and not the end of the quoted text.
         /// </summary>
         /// <returns>Returns the text within the quotes.</returns>
@@ -385,10 +410,10 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
-        /// Parses quoted text with options. Interprets the character at the current position as the
-        /// starting quote character and parses text up until the matching ending quote character.
+        /// Parses quoted text with options. The character at the current position is assumed to be the
+        /// starting quote character. This method parses text up until the next matching end quote character.
         /// Returns the parsed text without the quotes and sets the current position to the character
-        /// following the ending quote.
+        /// following the end quote.
         /// </summary>
         /// <param name="escapeChar">Specifies an escape character. If this character is immediately
         /// followed by a quote character, the pair is handled as a single quote literal and not the end
@@ -503,12 +528,28 @@ namespace SoftCircuits.Parsing.Helper
         /// all character to the end of the text being parsed. Can return an empty string.
         /// </summary>
         /// <param name="s">Text that causes parsing to end.</param>
-        /// <param name="comparison">One of the enumeration values that specifies the rules for
-        /// search.</param>
         /// <param name="includeToken">If <c>true</c> and a match is found, the matching text is
         /// also parsed.</param>
         /// <returns>A string with the parsed characters.</returns>
-        public string ParseTo(string s, StringComparison comparison = StringComparison.Ordinal, bool includeToken = false)
+        public string ParseTo(string s, bool includeToken = false)
+        {
+            int start = InternalIndex;
+            SkipTo(s, includeToken);
+            return Extract(start, InternalIndex);
+        }
+
+        /// <summary>
+        /// Parses characters until the next occurrence of the specified string and returns a
+        /// string with the parsed characters. If the specified string is not found, this method parses
+        /// all character to the end of the text being parsed. Can return an empty string.
+        /// </summary>
+        /// <param name="s">Text that causes parsing to end.</param>
+        /// <param name="comparison">One of the enumeration values that specifies the rules for
+        /// comparing the specified string.</param>
+        /// <param name="includeToken">If <c>true</c> and a match is found, the matching text is
+        /// also parsed.</param>
+        /// <returns>A string with the parsed characters.</returns>
+        public string ParseTo(string s, StringComparison comparison, bool includeToken = false)
         {
             int start = InternalIndex;
             SkipTo(s, comparison, includeToken);
@@ -532,7 +573,7 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
-        /// Parses characters until the next line break character. If no line break characters are found,
+        /// Parses characters until the next line break character. If no line-break characters are found,
         /// this method parses all characters to the end of the text being parsed.
         /// </summary>
         /// <returns>A string with the parsed characters.</returns>
@@ -727,7 +768,6 @@ namespace SoftCircuits.Parsing.Helper
         {
             if (chars == null || chars.Length == 0 || chars.Length > Remaining)
                 return false;
-
             for (int i = 0; i < chars.Length; i++)
             {
                 if (chars[i] != Text[InternalIndex + i])
@@ -737,47 +777,33 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
-        /// Compares the given string to the characters starting at the current position using a
-        /// case-sensitive comparison.
+        /// Returns <c>true</c> if the given string matches the characters at the current position, or
+        /// <c>false</c> otherwise.
         /// </summary>
         /// <param name="s">String to compare.</param>
-        /// <returns>Returns <c>true</c> if the given string matches the characters at the current
-        /// position. Returns false otherwise.</returns>
-        /// <remarks>Testing showed this is the fastest way to compare part of a string. Faster even
-        /// than using Span&lt;T&gt;.
-        /// </remarks>
+        /// <returns>Returns <c>true</c> if the given string matches the characters at the current position,
+        /// or <c>false</c> otherwise.</returns>
         public bool MatchesCurrentPosition(string s)
         {
-            if (s == null || s.Length == 0 || s.Length > Remaining)
+            if (s == null || s.Length == 0)
                 return false;
-
-            for (int i = 0; i < s.Length; i++)
-            {
-                if (s[i] != Text[InternalIndex + i])
-                    return false;
-            }
-            return true;
+            return string.CompareOrdinal(Text, InternalIndex, s, 0, s.Length) == 0;
         }
 
         /// <summary>
-        /// Compares the given string to the characters starting at the current position using the
-        /// specified comparison method. This method is not as fast as
-        /// <see cref="MatchesCurrentPosition(string)"></see> and should be used only when a
-        /// non-ordinal comparison is required.
+        /// Returns <c>true</c> if the given string matches the characters at the current position, or
+        /// <c>false</c> otherwise.
         /// </summary>
         /// <param name="s">String to compare.</param>
-        /// <param name="comparison">Type of string comparison to use.</param>
-        /// <returns>Returns <c>true</c> if the given string matches the text at the current position.
-        /// Returns false otherwise.</returns>
-        /// <remarks>Testing showed even this method was a little faster than using Span&lt;T&gt;,
-        /// although clearly not as fast as <see cref="MatchesCurrentPosition(string)"></see>.
-        /// </remarks>
+        /// <param name="comparison">One of the enumeration values that specifies the rules to use in the
+        /// comparison.</param>
+        /// <returns>Returns <c>true</c> if the given string matches the characters at the current position,
+        /// of <c>false</c> otherwise.</returns>
         public bool MatchesCurrentPosition(string s, StringComparison comparison)
         {
-            if (s == null || s.Length == 0 || s.Length > Remaining)
+            if (s == null || s.Length == 0)
                 return false;
-
-            return s.Equals(Text.Substring(InternalIndex, s.Length), comparison);
+            return string.Compare(Text, InternalIndex, s, 0, s.Length, comparison) == 0;
         }
 
         #endregion
