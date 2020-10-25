@@ -51,9 +51,19 @@ people, for the people, shall not perish from the earth.";
             Assert.AreEqual('r', helper.Peek(3));
             Assert.AreEqual(ParsingHelper.NullChar, helper.Peek(1000));
             Assert.AreEqual(ParsingHelper.NullChar, helper.Peek(-1000));
-            Assert.AreEqual(0, helper.Index);   // Index didn't change
+            Assert.AreEqual(0, helper.Index);
+
+            // Get
+            Assert.AreEqual('F', helper.Get());
+            Assert.AreEqual('o', helper.Get());
+            Assert.AreEqual('u', helper.Get());
+            Assert.AreEqual('r', helper.Get());
+            Assert.AreEqual(4, helper.Index);
+            helper.Index = ShortTest.Length;
+            Assert.AreEqual(ParsingHelper.NullChar, helper.Get());
 
             // Next
+            helper.Reset();
             helper.Next();
             Assert.AreEqual(1, helper.Index);
             Assert.AreEqual('o', helper.Peek());
@@ -239,6 +249,16 @@ people, for the people, shall not perish from the earth.";
             Assert.AreEqual("b", helper.ParseCharacter());
             Assert.AreEqual("c", helper.ParseCharacter());
             Assert.AreEqual("", helper.ParseCharacter());
+
+            // ParseCharacters
+            helper.Reset("abcdefg");
+            Assert.AreEqual("", helper.ParseCharacters(0));
+            Assert.AreEqual("", helper.ParseCharacters(-1));
+            Assert.AreEqual("a", helper.ParseCharacters(1));
+            Assert.AreEqual("bc", helper.ParseCharacters(2));
+            Assert.AreEqual("def", helper.ParseCharacters(3));
+            Assert.AreEqual("g", helper.ParseCharacters(10));
+            Assert.AreEqual("", helper.ParseCharacters(10));
         }
 
         [TestMethod]
@@ -344,6 +364,9 @@ people, for the people, shall not perish from the earth.";
             Assert.AreEqual(false, helper.MatchesCurrentPosition(string.Empty, StringComparison.OrdinalIgnoreCase));
             Assert.AreEqual(false, helper.MatchesCurrentPosition("consecrated_it"));
             Assert.AreEqual(false, helper.MatchesCurrentPosition("CONSECRATED_IT", StringComparison.OrdinalIgnoreCase));
+            Assert.AreEqual(true, helper.MatchesCurrentPosition(new[] { 'c', 'o', 'n', 's', 'e', 'c', 'r', 'a', 't', 'e', 'd', ' ', 'i', 't' }));
+            Assert.AreEqual(false, helper.MatchesCurrentPosition(new[] { 'o', 'n', 's', 'e', 'c', 'r', 'a', 't', 'e', 'd', ' ', 'i', 't' }));
+
             helper.Index = LongTest.Length - 1;
             Assert.AreEqual(false, helper.MatchesCurrentPosition("consecrated it"));
             Assert.AreEqual(false, helper.MatchesCurrentPosition("CONSECRATED IT", StringComparison.OrdinalIgnoreCase));
@@ -523,7 +546,7 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
 
             ParsingHelper helper = new ParsingHelper(text);
             helper.SkipTo("ghi");
-            pos = helper.CalculatePosition();
+            pos = helper.GetLineColumn();
             Assert.AreEqual(3, pos.Line);
             Assert.AreEqual(1, pos.Column);
         }

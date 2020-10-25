@@ -93,12 +93,12 @@ namespace SoftCircuits.Parsing.Helper
 
         /// <summary>
         /// Returns the character at the current position, or <see cref="NullChar"/>
-        /// if the current position is at the end of the text being parsed.
+        /// if the current position was at the end of the text being parsed.
         /// </summary>
         /// <returns>The character at the current position.</returns>
         public char Peek()
         {
-            Debug.Assert(InternalIndex >= 0);
+            Debug.Assert(InternalIndex >= 0 && InternalIndex <= Text.Length);
             return (InternalIndex < Text.Length) ? Text[InternalIndex] : NullChar;
         }
 
@@ -117,11 +117,25 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
+        /// Returns the character at the current position and increments the current position.
+        /// Returns <see cref="NullChar"/> if the current position was at the end of the text
+        /// being parsed.
+        /// </summary>
+        /// <returns>The character at the current position.</returns>
+        public char Get()
+        {
+            Debug.Assert(InternalIndex >= 0 && InternalIndex <= Text.Length);
+            if (InternalIndex < Text.Length)
+                return Text[InternalIndex++];
+            return NullChar;
+        }
+
+        /// <summary>
         /// Moves the current position ahead one character.
         /// </summary>
         public void Next()
         {
-            Debug.Assert(InternalIndex >= 0);
+            Debug.Assert(InternalIndex >= 0 && InternalIndex <= Text.Length);
             if (InternalIndex < Text.Length)
                 InternalIndex++;
         }
@@ -131,13 +145,20 @@ namespace SoftCircuits.Parsing.Helper
         /// </summary>
         /// <param name="count">The number of characters to move ahead. Use negative numbers
         /// to move backwards.</param>
-        public void Next(int count) => Index = InternalIndex + count;
+        public void Next(int count) => Index = (InternalIndex + count);
 
         /// <summary>
         /// Calculates the line and column information for the current position.
         /// </summary>
         /// <returns>A <see cref="ParsingPosition"/> that represents the current position.</returns>
+        [Obsolete("This method is obsolete and will be removed in a future version. Please use GetLineColumn() instead.")]
         public ParsePosition CalculatePosition() => ParsePosition.CalculatePosition(Text, Index);
+
+        /// <summary>
+        /// Determines the line and column values that correspond to the current position.
+        /// </summary>
+        /// <returns>A <see cref="ParsingPosition"/> that represents the current position.</returns>
+        public ParsePosition GetLineColumn() => ParsePosition.CalculatePosition(Text, InternalIndex);
 
         #region Skip characters
 
@@ -318,13 +339,25 @@ namespace SoftCircuits.Parsing.Helper
         /// </summary>
         /// <returns>A string that contains the parsed character, or an empty string if the current
         /// position was at the end of the text being parsed.</returns>
-        public string ParseCharacter()
+        public string ParseCharacter() => ParseCharacters(1);
+
+        /// <summary>
+        /// Parses the specified number of characters starting at the current position and increments
+        /// the current position by the number of characters parsed. Returns a string with the parsed
+        /// characters. Returns a shorter string if the end of the text is reached.
+        /// </summary>
+        /// <param name="count">The number of characters to parse.</param>
+        /// <returns>A string with the parsed characters.</returns>
+        public string ParseCharacters(int count)
         {
-            if (EndOfText)
-                return string.Empty;
-            char c = Peek();
-            Next();
-            return c.ToString();
+            int remaining = Remaining;
+            if (count > remaining)
+                count = remaining;
+            else if (count < 0)
+                count = 0;
+            int start = InternalIndex;
+            InternalIndex += count;
+            return Extract(start, InternalIndex);
         }
 
         /// <summary>
@@ -388,8 +421,7 @@ namespace SoftCircuits.Parsing.Helper
             StringBuilder builder = new StringBuilder();
 
             // Get and skip quote character
-            char quote = Peek();
-            Next();
+            char quote = Get();
 
             // Parse quoted text
             while (!EndOfText)
@@ -433,8 +465,7 @@ namespace SoftCircuits.Parsing.Helper
             StringBuilder builder = new StringBuilder();
 
             // Get and skip quote character
-            char quote = Peek();
-            Next();
+            char quote = Get();
 
             // Add opening quote if requested
             if (includeQuotes)
@@ -783,12 +814,8 @@ namespace SoftCircuits.Parsing.Helper
         /// <param name="s">String to compare.</param>
         /// <returns>Returns <c>true</c> if the given string matches the characters at the current position,
         /// or <c>false</c> otherwise.</returns>
-        public bool MatchesCurrentPosition(string s)
-        {
-            if (s == null || s.Length == 0)
-                return false;
-            return string.CompareOrdinal(Text, InternalIndex, s, 0, s.Length) == 0;
-        }
+        public bool MatchesCurrentPosition(string s) =>
+            s != null && s.Length != 0 && string.CompareOrdinal(Text, InternalIndex, s, 0, s.Length) == 0;
 
         /// <summary>
         /// Returns <c>true</c> if the given string matches the characters at the current position, or
@@ -799,12 +826,8 @@ namespace SoftCircuits.Parsing.Helper
         /// comparison.</param>
         /// <returns>Returns <c>true</c> if the given string matches the characters at the current position,
         /// of <c>false</c> otherwise.</returns>
-        public bool MatchesCurrentPosition(string s, StringComparison comparison)
-        {
-            if (s == null || s.Length == 0)
-                return false;
-            return string.Compare(Text, InternalIndex, s, 0, s.Length, comparison) == 0;
-        }
+        public bool MatchesCurrentPosition(string s, StringComparison comparison) =>
+            s != null && s.Length != 0 && string.Compare(Text, InternalIndex, s, 0, s.Length, comparison) == 0;
 
         #endregion
 
@@ -816,7 +839,12 @@ namespace SoftCircuits.Parsing.Helper
         /// </summary>
         /// <param name="start">0-based position of first character to be extracted.</param>
         /// <returns>Returns the extracted string.</returns>
-        public string Extract(int start) => Text.Substring(start);
+        public string Extract(int start)
+        {
+            if (start < 0 || start > Text.Length)
+                throw new ArgumentOutOfRangeException(nameof(start));
+            return  Text.Substring(start);
+        }
 
         /// <summary>
         /// Extracts a substring from the specified range of the text being parsed.
@@ -825,7 +853,14 @@ namespace SoftCircuits.Parsing.Helper
         /// <param name="end">0-based position of the character that follows the last
         /// character to be extracted.</param>
         /// <returns>Returns the extracted string.</returns>
-        public string Extract(int start, int end) => Text.Substring(start, end - start);
+        public string Extract(int start, int end)
+        {
+            if (start < 0 || start > Text.Length)
+                throw new ArgumentOutOfRangeException(nameof(start));
+            if (end < start || end > Text.Length)
+                throw new ArgumentOutOfRangeException(nameof(end));
+            return Text.Substring(start, end - start);
+        }
 
         #endregion
 

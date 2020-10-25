@@ -6,6 +6,9 @@ using System;
 
 namespace SoftCircuits.Parsing.Helper
 {
+    /// <summary>
+    /// Represents a line and column position within a string.
+    /// </summary>
     [Obsolete("This class is deprecated and will be removed in a future version. Please use ParsePosition instead.")]
     public class ParsingPosition : ParsePosition { }
 
