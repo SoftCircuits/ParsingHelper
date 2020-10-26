@@ -16,7 +16,7 @@ namespace SoftCircuits.Parsing.Helper
         StopAtEol,
 
         /// <summary>
-        /// Stop if the start of a new line is found.
+        /// Stop if the start of a new line (after a line break) is found.
         /// </summary>
         StopAtNextLine
     }

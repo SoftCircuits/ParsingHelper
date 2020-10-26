@@ -30,6 +30,12 @@ namespace SoftCircuits.Parsing.Helper
         public const char NullChar = '\0';
 
         /// <summary>
+        /// Specifies regular expression options used by all methods that use
+        /// regular expressions.
+        /// </summary>
+        public RegexOptions RegularExpressionOptions { get; set; }
+
+        /// <summary>
         /// Returns the text currently being parsed.
         /// </summary>
         public string Text { get; private set; }
@@ -39,8 +45,11 @@ namespace SoftCircuits.Parsing.Helper
         /// and sets the current position to the start of that text.
         /// </summary>
         /// <param name="text">The text to be parsed. Can be <c>null</c>.</param>
-        public ParsingHelper(string text)
+        /// <param name="regularExpressionOptions">Specifies regular expression options used by
+        /// all methods that use regular expressions.</param>
+        public ParsingHelper(string text, RegexOptions regularExpressionOptions = RegexOptions.None)
         {
+            RegularExpressionOptions = regularExpressionOptions;
             Reset(text);
         }
 
@@ -150,14 +159,14 @@ namespace SoftCircuits.Parsing.Helper
         /// <summary>
         /// Calculates the line and column information for the current position.
         /// </summary>
-        /// <returns>A <see cref="ParsingPosition"/> that represents the current position.</returns>
+        /// <returns>A <see cref="ParsePosition"/> that represents the current position.</returns>
         [Obsolete("This method is obsolete and will be removed in a future version. Please use GetLineColumn() instead.")]
         public ParsePosition CalculatePosition() => ParsePosition.CalculatePosition(Text, Index);
 
         /// <summary>
         /// Determines the line and column values that correspond to the current position.
         /// </summary>
-        /// <returns>A <see cref="ParsingPosition"/> that represents the current position.</returns>
+        /// <returns>A <see cref="ParsePosition"/> that represents the current position.</returns>
         public ParsePosition GetLineColumn() => ParsePosition.CalculatePosition(Text, InternalIndex);
 
         #region Skip characters
@@ -170,7 +179,7 @@ namespace SoftCircuits.Parsing.Helper
         /// for each character that should be skipped.</param>
         public void SkipWhile(Func<char, bool> predicate)
         {
-            Debug.Assert(InternalIndex >= 0);
+            Debug.Assert(InternalIndex >= 0 && InternalIndex <= Text.Length);
             while (InternalIndex < Text.Length && predicate(Text[InternalIndex]))
                 InternalIndex++;
         }
@@ -199,6 +208,18 @@ namespace SoftCircuits.Parsing.Helper
             SkipWhile(c => char.IsWhiteSpace(c) && !LineBreakCharacters.Contains(c));
             if (option == SkipWhiteSpaceOption.StopAtNextLine && LineBreakCharacters.Contains(Peek()))
                 SkipLineBreak();
+        }
+
+        /// <summary>
+        /// Moves the current position past any characters that match the given regular expression.
+        /// </summary>
+        /// <param name="regularExpression">The regular expression pattern to match.</param>
+        public void SkipRegEx(string regularExpression)
+        {
+            Regex regex = new Regex(regularExpression, RegularExpressionOptions);
+            Match match = regex.Match(Text, Index);
+            if (match.Success && match.Index == Index)
+                InternalIndex += match.Length;
         }
 
         #endregion
@@ -279,7 +300,7 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>True if a match was found.</returns>
         public bool SkipToRegEx(string regularExpression, bool includeToken = false)
         {
-            Regex regex = new Regex(regularExpression);
+            Regex regex = new Regex(regularExpression, RegularExpressionOptions);
             Match match = regex.Match(Text, Index);
             if (match.Success)
             {
@@ -668,7 +689,7 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>Returns the text of the matching token.</returns>
         public string ParseTokenRegEx(string regularExpression)
         {
-            Regex regex = new Regex(regularExpression);
+            Regex regex = new Regex(regularExpression, RegularExpressionOptions);
             Match match = regex.Match(Text, Index);
             if (match.Success)
             {
@@ -773,12 +794,14 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>Returns the matching tokens.</returns>
         public IEnumerable<string> ParseTokensRegEx(string regularExpression)
         {
-            Regex regex = new Regex(regularExpression);
+            Regex regex = new Regex(regularExpression, RegularExpressionOptions);
             MatchCollection matches = regex.Matches(Text, Index);
             if (matches.Count > 0)
             {
+                // Update current position
                 Match lastMatch = matches[matches.Count - 1];
                 InternalIndex = lastMatch.Index + lastMatch.Length;
+                // Return matches
                 foreach (Match match in matches)
                     yield return match.Value;
             }
@@ -814,8 +837,9 @@ namespace SoftCircuits.Parsing.Helper
         /// <param name="s">String to compare.</param>
         /// <returns>Returns <c>true</c> if the given string matches the characters at the current position,
         /// or <c>false</c> otherwise.</returns>
-        public bool MatchesCurrentPosition(string s) =>
-            s != null && s.Length != 0 && string.CompareOrdinal(Text, InternalIndex, s, 0, s.Length) == 0;
+        public bool MatchesCurrentPosition(string s) => s != null &&
+            s.Length != 0 &&
+            string.CompareOrdinal(Text, InternalIndex, s, 0, s.Length) == 0;
 
         /// <summary>
         /// Returns <c>true</c> if the given string matches the characters at the current position, or
@@ -826,8 +850,9 @@ namespace SoftCircuits.Parsing.Helper
         /// comparison.</param>
         /// <returns>Returns <c>true</c> if the given string matches the characters at the current position,
         /// of <c>false</c> otherwise.</returns>
-        public bool MatchesCurrentPosition(string s, StringComparison comparison) =>
-            s != null && s.Length != 0 && string.Compare(Text, InternalIndex, s, 0, s.Length, comparison) == 0;
+        public bool MatchesCurrentPosition(string s, StringComparison comparison) => s != null &&
+            s.Length != 0 &&
+            string.Compare(Text, InternalIndex, s, 0, s.Length, comparison) == 0;
 
         #endregion
 

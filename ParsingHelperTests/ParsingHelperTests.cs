@@ -468,6 +468,13 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
             helper.Reset();
             helper.SkipToRegEx(@"\b[a]\w+", true);
             Assert.IsTrue(helper.MatchesCurrentPosition(" opinion"));
+
+            helper.Reset("Abc1234def5678ghi");
+            Assert.AreEqual(true, helper.SkipTo("123"));
+            helper.SkipRegEx(@"\d+");
+            Assert.AreEqual('d', helper.Peek());
+            helper.SkipRegEx(@"[a-z]+");
+            Assert.AreEqual('5', helper.Peek());
         }
 
         [TestMethod]
