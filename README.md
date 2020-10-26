@@ -31,7 +31,7 @@ ParsingHelper helper = new ParsingHelper("The quick brown fox jumps over the laz
 
 char c = helper.Peek(); // Returns 'T'
 c = helper.Get();       // Returns 'T'
-c = helper.Get();      // Returns 'h'
+c = helper.Get();       // Returns 'h'
 
 helper.Reset(); // Returns to start of string
 
@@ -76,11 +76,31 @@ while (!helper.EndOfText)
 
 ## Tracking Line and Column Position
 
-For performance reasons, ParsingHelper does not track the current line and column values as it parses. However, you can use the `CalculatePosition()` method to obtain the line and column values that corresponds to the current position. This is useful for providing more information when reporting parsing errors back to the end user.
+For performance reasons, ParsingHelper does not track the current line and column values as it parses. However, you can use the `GetLineColumn()` method to calculate the line and column values that corresponds to the current position. This is useful for providing more information when reporting parsing errors back to the end user.
+
+## Skipping Over Characters
+
+To skip over a group of characters, you can use the `Skip()` method. This method accepts any number of `char` arguments (or a `char` array). It will advance the current position to the first character that is not one of the arguments.
+
+The following example would skip over any numeric digits.
+
+```cs
+helper.Skip('1', '2', '3', '4', '5', '6', '7', '8', '9', '0');
+```
+
+The `SkipWhile()` method accepts a predicate that specifies when this method should stop skipping. The following example would skip over any characters that are not an equal sign:
+
+```cs
+helper.SkipWhile(c => c != '=');
+```
+
+A common task when parsing is to skip over any whitespace characters. Use the `SkipWhiteSpace()` method to advance the current position to the next character that is not a white space character.
+
+The library has a number of other methods and overloads that support skipping over characters.
 
 ## Skipping to Characters
 
-In addition to advancing a specified number of characters, the library also provides ways to advance to various tokens.
+In addition to skipping specified characters, the library also provides ways to advance to specified characters.
 
 The `SkipTo()` method advances to the next occurrence of the given string.
 
@@ -100,32 +120,7 @@ This example will advance the current position to the first occurrence of any on
 
 Use the `SkipToEndOfLine()` to advance the current position to the first character that is a new-line character (i.e., `'\r'` or `'\n'`). If neither of the characters are found, this method advances to the end of the text and returns `false`. Use the `SkipToNextLine()` to advance the current position to the first character in the next line. If no next line is found, this method advances to the end of the text and returns `false`.
 
-## Skipping Past Characters
-
-To skip over a group of characters, you can use the `Skip()` method. This method accepts any number of `char` arguments (or a `char` array). It will advance the current position to the first character that is not one of the arguments.
-
-The following example would skip over any numeric digits.
-
-```cs
-helper.Skip('1', '2', '3', '4', '5', '6', '7', '8', '9', '0');
-```
-
-The `SkipWhile()` method accepts a predicate that specifies when this method should stop skipping. The following example would skip over any characters that are not an equal sign:
-
-```cs
-helper.SkipWhile(c => c != '=');
-```
-
-A common task when parsing is to skip over any whitespace characters. Use the `SkipWhiteSpace()` method to advance the current position to the next character that is not a white space character.
-
-For another example of `SkipWhile()`, here's how it is used to implement the `SkipWhiteSpace()` method.
-
-```cs
-public void SkipWhiteSpace()
-{
-    SkipWhile(char.IsWhiteSpace);
-}
-```
+The library also has a number of other methods and overloads for skipping to characters.
 
 ## Parsing Characters
 
@@ -147,6 +142,8 @@ token = helper.ParseToken(' ', '\t', '\r', '\n');
 token = helper.ParseToken(char.IsWhiteSpace);
 ```
 
+The library also has a number of other methods and overloads for parsing characters.
+
 ## Parsing Quoted Text
 
 You may have an occassion to parse quoted text. In this case, you will probably want the quoted text (without the quotes). The `ParseQuotedText()` method makes this easy.
@@ -165,6 +162,8 @@ string token = helper.ParseQuotedText();
 
 This example would set the `token` variable to `three and "four"`. The two pairs of quotes are interpreted each as one quote in the text and not the end of the quoted text.
 
+The `ParseQuotedText()` method has a second overload that allows you to specify the escape character (including no escape character), whether or not the escape character is included in the result, and whether or not the enclosing quotes are included in the result.
+
 ## Extracting Text
 
 It is common to want to extract text tokens as you parse them. You can use the `Extract()` method to do this. The `Extract()` method accepts two integer arguments that specify the 0-based position of the first character to be extracted and the 0-based position of the character that follows the last character to be extracted.
@@ -180,11 +179,6 @@ Neither of these methods change the current position.
 ## Comparing Text
 
 Finally, you may need to test if a predefined string is equal to the text at the current location. The `MatchesCurrentPosition()` method tests this. It accepts a string argument and returns a Boolean value that indicates if the specified string matches the text starting at the current location.  The `MatchesCurrentPosition()` method supports an optional `StringComparison` value to specify how characters should be compared. Note that while this method can be handy, it's less performant than most methods in this class. Any type of search function that works by calling this method at each successive position should be avoided where performance matters.
-
-
-
-
-
 
 ## Examples
 
