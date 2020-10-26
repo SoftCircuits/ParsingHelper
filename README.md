@@ -10,109 +10,37 @@ Install-Package SoftCircuits.Parsing.Helper
 
 ## Introduction
 
-`ParsingHelper` is a .NET class library that makes it easier to parse text. The library tracks the current position within the text, ensures your code never attempts to access a character at an invalid index, and includes a number of methods that make parsing easier. The library makes your text-parsing code more concise and more robust.
+`ParsingHelper` is a .NET class library that makes it much easier to parse text. The library tracks the current position within the text, ensures your code never accessing characters at an invalid index, and includes many methods that make parsing easier. The library makes your text-parsing code more concise and more robust.
 
-## Examples
+## Getting Started
 
-Here are a couple of examples to illustrate use of the library.
+To parse a string, call the `ParsingHelper` constructor with the string you want to parse. If the string argument is `null`, it will be safely treated as an empty string. The constructor initializes the class instance to parse the given string and sets the current position to the start of that string.
 
-#### Parse a Sentence into Words
+Use the `Peek()` method to read the character at the current position without changing the current position. The `Peek()` method can optionally accept an integer argument that specifies the character position as the number of characters ahead of the current position. For example, `Peek(1)` would return the character that comes after the character at the current position. (Calling `Peek()` is equal to calling `Peek(0)`.) If the position specified is out of bounds for the current string, `Peek()` returns  `ParsingHelper.NullChar` (equal to `'\0'`).
 
-This example parses a sentence into words. This implementation only considers spaces and periods as word delimiters. But you could easily add more characters, or use the overload of `ParsingHelper.ParseTokens()` that accepts a lambda expression.
-
-```cs
-ParsingHelper helper = new ParsingHelper("The quick brown fox jumps over the lazy dog.");
-
-List<string> words = helper.ParseTokens(' ', '.').ToList();
-
-CollectionAssert.AreEqual(new[] {
-    "The",
-    "quick",
-    "brown",
-    "fox",
-    "jumps",
-    "over",
-    "the",
-    "lazy",
-    "dog" }, words);
-```
-
-#### Command Line
-
-This example parses a command line. It detects both arguments and flags (arguments preceded with `'-'` or `'/'`). It's okay with whitespace between the flag character and flag. And any argument or flag that contains whitespace can be enclosed in quotes.
-
-```cs
-ParsingHelper helper = new ParsingHelper("app -v -f /d-o file1 \"file 2\"");
-List<string> arguments = new List<string>();
-List<string> flags = new List<string>();
-
-char[] flagCharacters = new char[] { '-', '/' };
-string arg;
-bool isFlag = false;
-
-while (!helper.EndOfText)
-{
-    // Skip any whitespace
-    helper.SkipWhiteSpace();
-    // Is this a flag?
-    if (flagCharacters.Contains(helper.Peek()))
-    {
-        isFlag = true;
-        // Skip over flag character
-        helper++;
-        // Allow whitespace between flag character and flag
-        helper.SkipWhiteSpace();
-    }
-    else isFlag = false;
-    // Parse item
-    if (helper.Peek() == '"')
-        arg = helper.ParseQuotedText();
-    else
-        arg = helper.ParseWhile(c => !char.IsWhiteSpace(c) && !flagCharacters.Contains(c));
-    // Add argument to appropriate collection
-    if (isFlag)
-        flags.Add(arg);
-    else
-        arguments.Add(arg);
-}
-
-CollectionAssert.AreEqual(new[] { "app", "file1", "file 2" }, arguments);
-CollectionAssert.AreEqual(new[] { "v", "f", "d", "o" }, flags);
-```
-
-#### Regular Expressions
-
-This example uses a regular expression to find all the words in a string that start with the letter "J".
-
-```cs
-ParsingHelper helper = new ParsingHelper("Jim Jack Sally Jennifer Bob Gary Jonathan Bill");
-
-IEnumerable<string> results = helper.ParseTokensRegEx(@"\b[J]\w+");
-
-CollectionAssert.AreEqual(new[]
-{
-    "Jim",
-    "Jack",
-    "Jennifer",
-    "Jonathan"
-}, results.ToList());
-```
-
-## Documentation
-
-The `ParsingHelper` constructor accepts a string argument that represents the text you are going to parse. If this argument is `null`, it will be safely treated as an empty string.
-
-```cs
-ParsingHelper helper = new ParsingHelper("The quick brown fox jumps over the lazy dog.");
-```
+Use the `Get()` method to read the character at the current position and then increment the current position to the next character.
 
 You can call the `Reset()` method to reset the current position back to the start of the string. The `Reset()` method accepts an optional string argument and, if supplied, will configure the class to begin parsing the new string.
-
-Use the `Peek()` method to read the character at the current position (without changing the current position). The `Peek()` method can optionally accept an integer argument that specifies the character position as the number of characters ahead of the current position. For example, `Peek(1)` would return the character that comes after the character at the current position. (Calling `Peek()` is equal to calling `Peek(0)`.) If the position specified is out of bounds for the current string, `Peek()` returns  `ParsingHelper.NullChar` (equal to `'\0'`).
 
 The `Text` property returns the string being parsed. And the `Index` property returns the current position within the string being parsed. Although you would normally use the navigation methods to change the `Index` value, you can set it directly. If you set the `Index` property an invalid value, it will be adjusted so it is always in the range of 0 to `Text.Length`.
 
 The `EndOfText` property returns `true` when you have reached the end of the text. And the `Remaining` property returns the number of characters still to be parsed (calculated as `Text.Length - Index`).
+
+```cs
+ParsingHelper helper = new ParsingHelper("The quick brown fox jumps over the lazy dog.");
+
+char c = helper.Peek(); // Returns 'T'
+c = helper.Get();       // Returns 'T'
+c = helper.Get();      // Returns 'h'
+
+helper.Reset(); // Returns to start of string
+
+string text = helper.Text; // Returns "The quick brown fox jumps over the lazy dog."
+int index = helper.Index;  // Returns 0
+
+bool endOfText = helper.EndOfText; // Returns false
+int remaining = helper.Remaining;  // Returns helper.Text.Length
+```
 
 ## Navigation
 
@@ -252,3 +180,95 @@ Neither of these methods change the current position.
 ## Comparing Text
 
 Finally, you may need to test if a predefined string is equal to the text at the current location. The `MatchesCurrentPosition()` method tests this. It accepts a string argument and returns a Boolean value that indicates if the specified string matches the text starting at the current location.  The `MatchesCurrentPosition()` method supports an optional `StringComparison` value to specify how characters should be compared. Note that while this method can be handy, it's less performant than most methods in this class. Any type of search function that works by calling this method at each successive position should be avoided where performance matters.
+
+
+
+
+
+
+## Examples
+
+Here are a couple of examples to illustrate use of the library.
+
+#### Parse a Sentence into Words
+
+This example parses a sentence into words. This implementation only considers spaces and periods as word delimiters. But you could easily add more characters, or use the overload of `ParsingHelper.ParseTokens()` that accepts a lambda expression.
+
+```cs
+ParsingHelper helper = new ParsingHelper("The quick brown fox jumps over the lazy dog.");
+
+List<string> words = helper.ParseTokens(' ', '.').ToList();
+
+CollectionAssert.AreEqual(new[] {
+    "The",
+    "quick",
+    "brown",
+    "fox",
+    "jumps",
+    "over",
+    "the",
+    "lazy",
+    "dog" }, words);
+```
+
+#### Command Line
+
+This example parses a command line. It detects both arguments and flags (arguments preceded with `'-'` or `'/'`). It's okay with whitespace between the flag character and flag. And any argument or flag that contains whitespace can be enclosed in quotes.
+
+```cs
+ParsingHelper helper = new ParsingHelper("app -v -f /d-o file1 \"file 2\"");
+List<string> arguments = new List<string>();
+List<string> flags = new List<string>();
+
+char[] flagCharacters = new char[] { '-', '/' };
+string arg;
+bool isFlag = false;
+
+while (!helper.EndOfText)
+{
+    // Skip any whitespace
+    helper.SkipWhiteSpace();
+    // Is this a flag?
+    if (flagCharacters.Contains(helper.Peek()))
+    {
+        isFlag = true;
+        // Skip over flag character
+        helper++;
+        // Allow whitespace between flag character and flag
+        helper.SkipWhiteSpace();
+    }
+    else isFlag = false;
+    // Parse item
+    if (helper.Peek() == '"')
+        arg = helper.ParseQuotedText();
+    else
+        arg = helper.ParseWhile(c => !char.IsWhiteSpace(c) && !flagCharacters.Contains(c));
+    // Add argument to appropriate collection
+    if (isFlag)
+        flags.Add(arg);
+    else
+        arguments.Add(arg);
+}
+
+CollectionAssert.AreEqual(new[] { "app", "file1", "file 2" }, arguments);
+CollectionAssert.AreEqual(new[] { "v", "f", "d", "o" }, flags);
+```
+
+#### Regular Expressions
+
+This example uses a regular expression to find all the words in a string that start with the letter "J".
+
+```cs
+ParsingHelper helper = new ParsingHelper("Jim Jack Sally Jennifer Bob Gary Jonathan Bill");
+
+IEnumerable<string> results = helper.ParseTokensRegEx(@"\b[J]\w+");
+
+CollectionAssert.AreEqual(new[]
+{
+    "Jim",
+    "Jack",
+    "Jennifer",
+    "Jonathan"
+}, results.ToList());
+```
+
