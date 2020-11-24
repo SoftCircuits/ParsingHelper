@@ -92,13 +92,13 @@ namespace SoftCircuits.Parsing.Helper
         /// Returns <c>true</c> if the current position is at the end of the text being parsed.
         /// Otherwise, false.
         /// </summary>
-        public bool EndOfText => (InternalIndex >= Text.Length);
+        public bool EndOfText => InternalIndex >= Text.Length;
 
         /// <summary>
         /// Returns the number of characters not yet parsed. This is equal to the length
         /// of the text being parsed, minus the current position.
         /// </summary>
-        public int Remaining => (Text.Length - InternalIndex);
+        public int Remaining => Text.Length - InternalIndex;
 
         /// <summary>
         /// Returns the character at the current position, or <see cref="NullChar"/>
@@ -134,9 +134,7 @@ namespace SoftCircuits.Parsing.Helper
         public char Get()
         {
             Debug.Assert(InternalIndex >= 0 && InternalIndex <= Text.Length);
-            if (InternalIndex < Text.Length)
-                return Text[InternalIndex++];
-            return NullChar;
+            return (InternalIndex < Text.Length) ? Text[InternalIndex++] : NullChar;
         }
 
         /// <summary>
@@ -154,7 +152,7 @@ namespace SoftCircuits.Parsing.Helper
         /// </summary>
         /// <param name="count">The number of characters to move ahead. Use negative numbers
         /// to move backwards.</param>
-        public void Next(int count) => Index = (InternalIndex + count);
+        public void Next(int count) => Index = InternalIndex + count;
 
         /// <summary>
         /// Calculates the line and column information for the current position.
@@ -345,7 +343,7 @@ namespace SoftCircuits.Parsing.Helper
         {
             Debug.Assert(EndOfText || LineBreakCharacters.Contains(Peek()));
             if (MatchesCurrentPosition(LineBreakCharacters))
-                Next(LineBreakCharacters.Length);
+                InternalIndex += LineBreakCharacters.Length;
             else
                 Next();
         }
