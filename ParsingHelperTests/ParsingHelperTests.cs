@@ -7,6 +7,7 @@ using SoftCircuits.Parsing.Helper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace ParsingHelperTests
 {
@@ -474,6 +475,61 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
             helper.SkipRegEx(@"\d+");
             Assert.AreEqual('d', helper.Peek());
             helper.SkipRegEx(@"[a-z]+");
+            Assert.AreEqual('5', helper.Peek());
+
+            // Test overloads that accept a Regex object
+
+            Regex regex;
+            helper.Reset(text);
+
+            regex = new Regex(@"\b[d]\w+");
+            s = helper.ParseTokenRegEx(regex);
+            Assert.AreEqual("dime", s);
+            Assert.AreEqual(36, helper.Index);
+
+            regex = new Regex(@"\b[s]\w+");
+            helper.Reset();
+            results = helper.ParseTokensRegEx(regex);
+            CollectionAssert.AreEqual(new[] {
+                "summer",
+                "side",
+                "servant" }, results.ToList());
+            Assert.AreEqual(127, helper.Index);
+
+            regex = new Regex(@"\b[x]\w+");
+            helper.Reset();
+            s = helper.ParseTokenRegEx(regex);
+            Assert.AreEqual(string.Empty, s);
+            Assert.AreEqual(text.Length, helper.Index);
+
+            regex = new Regex(@"\b[x]\w+");
+            helper.Reset();
+            results = helper.ParseTokensRegEx(regex);
+            CollectionAssert.AreEqual(new List<string>(), results.ToList());
+            Assert.AreEqual(text.Length, helper.Index);
+
+            regex = new Regex(@"\b[a]\w+");
+            helper.Reset();
+            helper.SkipToRegEx(regex);
+            Assert.IsTrue(helper.MatchesCurrentPosition("attention"));
+
+            regex = new Regex(@"\b[r]\w+");
+            s = helper.ParseToRegEx(regex);
+            Assert.AreEqual("attention opinion ", s);
+            Assert.IsTrue(helper.MatchesCurrentPosition("railway "));
+
+            regex = new Regex(@"\b[a]\w+");
+            helper.Reset();
+            helper.SkipToRegEx(regex, true);
+            Assert.IsTrue(helper.MatchesCurrentPosition(" opinion"));
+
+            helper.Reset("Abc1234def5678ghi");
+            Assert.AreEqual(true, helper.SkipTo("123"));
+            regex = new Regex(@"\d+");
+            helper.SkipRegEx(regex);
+            Assert.AreEqual('d', helper.Peek());
+            regex = new Regex(@"[a-z]+");
+            helper.SkipRegEx(regex);
             Assert.AreEqual('5', helper.Peek());
         }
 

@@ -215,6 +215,18 @@ namespace SoftCircuits.Parsing.Helper
         public void SkipRegEx(string regularExpression)
         {
             Regex regex = new Regex(regularExpression, RegularExpressionOptions);
+            SkipRegEx(regex);
+        }
+
+        /// <summary>
+        /// Moves the current position past any characters that match the given regular expression.
+        /// </summary>
+        /// <param name="regex">The regular expression pattern to match.</param>
+        public void SkipRegEx(Regex regex)
+        {
+            if (regex == null)
+                throw new ArgumentNullException(nameof(regex));
+
             Match match = regex.Match(Text, Index);
             if (match.Success && match.Index == Index)
                 InternalIndex += match.Length;
@@ -299,6 +311,23 @@ namespace SoftCircuits.Parsing.Helper
         public bool SkipToRegEx(string regularExpression, bool includeToken = false)
         {
             Regex regex = new Regex(regularExpression, RegularExpressionOptions);
+            return SkipToRegEx(regex, includeToken);
+        }
+
+        /// <summary>
+        /// Moves the current position to the start of the next text that matches the given regular
+        /// expression and returns <c>true</c> if a match was found. If no match is found, this method
+        /// moves the current position to the end of the text being parsed and returns <c>false</c>.
+        /// </summary>
+        /// <param name="regex">A regular expression that the text must match.</param>
+        /// <param name="includeToken">If <c>true</c> and a match is found, the matching text is
+        /// also skipped.</param>
+        /// <returns>True if a match was found.</returns>
+        public bool SkipToRegEx(Regex regex, bool includeToken = false)
+        {
+            if (regex == null)
+                throw new ArgumentNullException(nameof(regex));
+
             Match match = regex.Match(Text, Index);
             if (match.Success)
             {
@@ -617,8 +646,26 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>A string with the parsed characters.</returns>
         public string ParseToRegEx(string regularExpression, bool includeToken = false)
         {
+            Regex regex = new Regex(regularExpression, RegularExpressionOptions);
+            return ParseToRegEx(regex, includeToken);
+        }
+
+        /// <summary>
+        /// Parses characters until the start of the next token that matches the given regular
+        /// expression and returns a string with the parsed characters. If no match is found, this
+        /// method parses all characters to the end of the text being parsed. Can return an empty string.
+        /// </summary>
+        /// <param name="regex">A regular expression that the text must match.</param>
+        /// <param name="includeToken">If <c>true</c> and a match is found, the matching text is
+        /// also parsed.</param>
+        /// <returns>A string with the parsed characters.</returns>
+        public string ParseToRegEx(Regex regex, bool includeToken = false)
+        {
+            if (regex == null)
+                throw new ArgumentNullException(nameof(regex));
+
             int start = InternalIndex;
-            SkipToRegEx(regularExpression, includeToken);
+            SkipToRegEx(regex, includeToken);
             return Extract(start, InternalIndex);
         }
 
@@ -688,6 +735,21 @@ namespace SoftCircuits.Parsing.Helper
         public string ParseTokenRegEx(string regularExpression)
         {
             Regex regex = new Regex(regularExpression, RegularExpressionOptions);
+            return ParseTokenRegEx(regex);
+        }
+
+        /// <summary>
+        /// Parses text using a regular expression. Skips up to the start of the matching text, and then
+        /// parses the matching text. If no match is found, the current position is set to the end of
+        /// the text and an empty string is returned.
+        /// </summary>
+        /// <param name="regex">A regular expression that the token must match.</param>
+        /// <returns>Returns the text of the matching token.</returns>
+        public string ParseTokenRegEx(Regex regex)
+        {
+            if (regex == null)
+                throw new ArgumentNullException(nameof(regex));
+
             Match match = regex.Match(Text, Index);
             if (match.Success)
             {
@@ -793,6 +855,21 @@ namespace SoftCircuits.Parsing.Helper
         public IEnumerable<string> ParseTokensRegEx(string regularExpression)
         {
             Regex regex = new Regex(regularExpression, RegularExpressionOptions);
+            return ParseTokensRegEx(regex);
+        }
+
+        /// <summary>
+        /// Parses all tokens that match the given regular expression and sets the current position the end
+        /// of the last token. If no matches are found, the current position is set to the end of the text
+        /// and an empty collection is returned.
+        /// </summary>
+        /// <param name="regex">A regular expression that the tokens must match.</param>
+        /// <returns>Returns the matching tokens.</returns>
+        public IEnumerable<string> ParseTokensRegEx(Regex regex)
+        {
+            if (regex == null)
+                throw new ArgumentNullException(nameof(regex));
+
             MatchCollection matches = regex.Matches(Text, Index);
             if (matches.Count > 0)
             {
