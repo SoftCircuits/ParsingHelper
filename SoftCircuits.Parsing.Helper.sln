@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29519.181
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftCircuits.Parsing.Helper", "SoftCircuits.Parsing.Helper\SoftCircuits.Parsing.Helper.csproj", "{F76FC2B7-4BD6-4315-86C1-4434D2173649}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SoftCircuits.Parsing.Helper", "SoftCircuits.Parsing.Helper\SoftCircuits.Parsing.Helper.csproj", "{F76FC2B7-4BD6-4315-86C1-4434D2173649}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParsingHelperTests", "ParsingHelperTests\ParsingHelperTests.csproj", "{65DAAB91-21B3-426E-A7DF-99470B900E40}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestParsingHelper", "TestParsingHelper\TestParsingHelper.csproj", "{FF09DC20-7D47-4DD3-9313-57C25959A863}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{F76FC2B7-4BD6-4315-86C1-4434D2173649}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F76FC2B7-4BD6-4315-86C1-4434D2173649}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F76FC2B7-4BD6-4315-86C1-4434D2173649}.Release|Any CPU.Build.0 = Release|Any CPU
-		{65DAAB91-21B3-426E-A7DF-99470B900E40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{65DAAB91-21B3-426E-A7DF-99470B900E40}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{65DAAB91-21B3-426E-A7DF-99470B900E40}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{65DAAB91-21B3-426E-A7DF-99470B900E40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF09DC20-7D47-4DD3-9313-57C25959A863}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF09DC20-7D47-4DD3-9313-57C25959A863}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF09DC20-7D47-4DD3-9313-57C25959A863}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF09DC20-7D47-4DD3-9313-57C25959A863}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

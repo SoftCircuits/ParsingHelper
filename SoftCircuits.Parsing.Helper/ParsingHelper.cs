@@ -1,10 +1,11 @@
-﻿// Copyright (c) 2019-2020 Jonathan Wood (www.softcircuits.com)
+﻿// Copyright (c) 2019-2021 Jonathan Wood (www.softcircuits.com)
 // Licensed under the MIT license.
 //
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -47,7 +48,7 @@ namespace SoftCircuits.Parsing.Helper
         /// <param name="text">The text to be parsed. Can be <c>null</c>.</param>
         /// <param name="regularExpressionOptions">Specifies regular expression options used by
         /// all methods that use regular expressions.</param>
-        public ParsingHelper(string text, RegexOptions regularExpressionOptions = RegexOptions.None)
+        public ParsingHelper(string? text, RegexOptions regularExpressionOptions = RegexOptions.None)
         {
             RegularExpressionOptions = regularExpressionOptions;
             Reset(text);
@@ -57,7 +58,10 @@ namespace SoftCircuits.Parsing.Helper
         /// Sets the text to be parsed and sets the current position to the start of that text.
         /// </summary>
         /// <param name="text">The text to be parsed. Can be <c>null</c>.</param>
-        public void Reset(string text)
+#if NET5_0
+        [MemberNotNull(nameof(Text))]
+#endif
+        public void Reset(string? text)
         {
             Text = text ?? string.Empty;
             InternalIndex = 0;
@@ -162,7 +166,7 @@ namespace SoftCircuits.Parsing.Helper
         public ParsePosition CalculatePosition() => ParsePosition.CalculatePosition(Text, Index);
 
         /// <summary>
-        /// Determines the line and column values that correspond to the current position.
+        /// Calculates the line and column values that correspond to the current position.
         /// </summary>
         /// <returns>A <see cref="ParsePosition"/> that represents the current position.</returns>
         public ParsePosition GetLineColumn() => ParsePosition.CalculatePosition(Text, InternalIndex);
@@ -196,7 +200,7 @@ namespace SoftCircuits.Parsing.Helper
 
         /// <summary>
         /// Moves the current position to the next character that is not a whitespace character,
-        /// with an option to stop sooner under a specified condition.
+        /// with an option to stop sooner under specified conditions.
         /// </summary>
         /// <param name="option">Specifies a condition where skipping should stop before a
         /// whitespace character is found.</param>
@@ -874,7 +878,11 @@ namespace SoftCircuits.Parsing.Helper
             if (matches.Count > 0)
             {
                 // Update current position
+#if NETSTANDARD2_0
                 Match lastMatch = matches[matches.Count - 1];
+#else
+                Match lastMatch = matches[^1];
+#endif
                 InternalIndex = lastMatch.Index + lastMatch.Length;
                 // Return matches
                 foreach (Match match in matches)
@@ -883,7 +891,7 @@ namespace SoftCircuits.Parsing.Helper
             else InternalIndex = Text.Length;
         }
 
-        #endregion
+#endregion
 
         #region Matches current position
 
@@ -893,7 +901,7 @@ namespace SoftCircuits.Parsing.Helper
         /// </summary>
         /// <returns>Returns <c>true</c> if the given characters match the characters at the current
         /// position. Returns false otherwise.</returns>
-        public bool MatchesCurrentPosition(char[] chars)
+        public bool MatchesCurrentPosition(char[]? chars)
         {
             if (chars == null || chars.Length == 0 || chars.Length > Remaining)
                 return false;
@@ -912,7 +920,7 @@ namespace SoftCircuits.Parsing.Helper
         /// <param name="s">String to compare.</param>
         /// <returns>Returns <c>true</c> if the given string matches the characters at the current position,
         /// or <c>false</c> otherwise.</returns>
-        public bool MatchesCurrentPosition(string s) => s != null &&
+        public bool MatchesCurrentPosition(string? s) => s != null &&
             s.Length != 0 &&
             string.CompareOrdinal(Text, InternalIndex, s, 0, s.Length) == 0;
 
@@ -925,7 +933,7 @@ namespace SoftCircuits.Parsing.Helper
         /// comparison.</param>
         /// <returns>Returns <c>true</c> if the given string matches the characters at the current position,
         /// of <c>false</c> otherwise.</returns>
-        public bool MatchesCurrentPosition(string s, StringComparison comparison) => s != null &&
+        public bool MatchesCurrentPosition(string? s, StringComparison comparison) => s != null &&
             s.Length != 0 &&
             string.Compare(Text, InternalIndex, s, 0, s.Length, comparison) == 0;
 
@@ -943,7 +951,11 @@ namespace SoftCircuits.Parsing.Helper
         {
             if (start < 0 || start > Text.Length)
                 throw new ArgumentOutOfRangeException(nameof(start));
+#if NETSTANDARD2_0
             return  Text.Substring(start);
+#else
+            return  Text[start..];
+#endif
         }
 
         /// <summary>
@@ -959,7 +971,11 @@ namespace SoftCircuits.Parsing.Helper
                 throw new ArgumentOutOfRangeException(nameof(start));
             if (end < start || end > Text.Length)
                 throw new ArgumentOutOfRangeException(nameof(end));
+#if NETSTANDARD2_0
             return Text.Substring(start, end - start);
+#else
+            return Text[start..end];
+#endif
         }
 
         #endregion
