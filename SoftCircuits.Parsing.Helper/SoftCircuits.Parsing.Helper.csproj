@@ -10,7 +10,7 @@
     <Product>ParsingHelper</Product>
     <Copyright>Copyright © 2019-2021 SoftCircuits</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <PackageReleaseNotes>Now targets either .NET Standard 2.0 or .NET 5.0.</PackageReleaseNotes>
+    <PackageReleaseNotes>Added overload to ParseTo() that will parse until any of a number of strings is found.</PackageReleaseNotes>
     <PackageTags>text parse parser parsing text-parser text-parsing parsing-helper .net csharp tokenizer</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/SoftCircuits/ParsingHelper</RepositoryUrl>
@@ -20,11 +20,11 @@
 Now targets .NET Standard 2.0 or .NET 5.0.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Version>4.0.0</Version>
+    <Version>4.0.1</Version>
     <PackageProjectUrl>https://github.com/SoftCircuits/ParsingHelper</PackageProjectUrl>
     <PackageIcon>Logo_64x64.png</PackageIcon>
     <PackageIconUrl />
-    <AssemblyVersion>4.0.0.0</AssemblyVersion>
+    <AssemblyVersion>4.0.1.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>

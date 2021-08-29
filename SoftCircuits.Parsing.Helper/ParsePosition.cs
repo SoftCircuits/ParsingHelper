@@ -42,8 +42,8 @@ namespace SoftCircuits.Parsing.Helper
         /// positions.</returns>
         public static ParsePosition CalculatePosition(string text, int index)
         {
-            ParsingHelper helper = new ParsingHelper(text);
-            ParsePosition position = new ParsePosition();
+            ParsingHelper helper = new(text);
+            ParsePosition position = new();
             int lineStartPos = 0;
 
             while (helper < index)

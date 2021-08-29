@@ -218,7 +218,7 @@ namespace SoftCircuits.Parsing.Helper
         /// <param name="regularExpression">The regular expression pattern to match.</param>
         public void SkipRegEx(string regularExpression)
         {
-            Regex regex = new Regex(regularExpression, RegularExpressionOptions);
+            Regex regex = new(regularExpression, RegularExpressionOptions);
             SkipRegEx(regex);
         }
 
@@ -314,7 +314,7 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>True if a match was found.</returns>
         public bool SkipToRegEx(string regularExpression, bool includeToken = false)
         {
-            Regex regex = new Regex(regularExpression, RegularExpressionOptions);
+            Regex regex = new(regularExpression, RegularExpressionOptions);
             return SkipToRegEx(regex, includeToken);
         }
 
@@ -470,7 +470,7 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>Returns the text within the quotes.</returns>
         public string ParseQuotedText()
         {
-            StringBuilder builder = new StringBuilder();
+            StringBuilder builder = new();
 
             // Get and skip quote character
             char quote = Get();
@@ -514,7 +514,7 @@ namespace SoftCircuits.Parsing.Helper
             if (EndOfText)
                 return string.Empty;
 
-            StringBuilder builder = new StringBuilder();
+            StringBuilder builder = new();
 
             // Get and skip quote character
             char quote = Get();
@@ -639,6 +639,50 @@ namespace SoftCircuits.Parsing.Helper
             return Extract(start, InternalIndex);
         }
 
+
+        /// <summary>
+        /// Parses characters until the next occurrence of any one of the specified strings and
+        /// returns a string with the parsed characters. If none of the specified strings are found,
+        /// this method parses all character up to the end of the text being parsed. Can return an empty
+        /// string.
+        /// </summary>
+        /// <param name="terms">The strings that cause parsing to end.</param>
+        /// <param name="comparison">One of the enumeration values that specifies the rules for
+        /// comparing the specified string.</param>
+        /// <param name="includeToken">If <c>true</c> and a match is found, the matching text is
+        /// also parsed.</param>
+        /// <returns>A string with the parsed characters.</returns>
+        public string ParseTo(IEnumerable<string> terms, StringComparison comparison, bool includeToken = false)
+        {
+            if (!EndOfText)
+            {
+                int start = InternalIndex;
+                int matchIndex = int.MaxValue;
+                string? matchTerm = null;
+
+                // Search for each term
+                foreach (string term in terms)
+                {
+                    int i = Text.IndexOf(term, InternalIndex, comparison);
+                    if (i >= 0 && i < matchIndex)
+                    {
+                        matchIndex = i;
+                        matchTerm = term;
+                    }
+                }
+
+                // Check for result
+                if (matchTerm != null)
+                {
+                    InternalIndex = matchIndex;
+                    if (includeToken)
+                        InternalIndex += matchTerm.Length;
+                    return Extract(start, InternalIndex);
+                }
+            }
+            return string.Empty;
+        }
+
         /// <summary>
         /// Parses characters until the start of the next token that matches the given regular
         /// expression and returns a string with the parsed characters. If no match is found, this
@@ -650,7 +694,7 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>A string with the parsed characters.</returns>
         public string ParseToRegEx(string regularExpression, bool includeToken = false)
         {
-            Regex regex = new Regex(regularExpression, RegularExpressionOptions);
+            Regex regex = new(regularExpression, RegularExpressionOptions);
             return ParseToRegEx(regex, includeToken);
         }
 
@@ -738,7 +782,7 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>Returns the text of the matching token.</returns>
         public string ParseTokenRegEx(string regularExpression)
         {
-            Regex regex = new Regex(regularExpression, RegularExpressionOptions);
+            Regex regex = new(regularExpression, RegularExpressionOptions);
             return ParseTokenRegEx(regex);
         }
 
@@ -858,7 +902,7 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>Returns the matching tokens.</returns>
         public IEnumerable<string> ParseTokensRegEx(string regularExpression)
         {
-            Regex regex = new Regex(regularExpression, RegularExpressionOptions);
+            Regex regex = new(regularExpression, RegularExpressionOptions);
             return ParseTokensRegEx(regex);
         }
 

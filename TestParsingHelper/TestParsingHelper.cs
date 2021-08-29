@@ -38,7 +38,7 @@ people, for the people, shall not perish from the earth.";
             [TestMethod]
             public void BasicTests()
             {
-                ParsingHelper helper = new ParsingHelper(ShortTest);
+                ParsingHelper helper = new(ShortTest);
 
                 // Initial state
                 Assert.AreEqual('\0', ParsingHelper.NullChar);
@@ -124,7 +124,7 @@ people, for the people, shall not perish from the earth.";
             [TestMethod]
             public void SkipTests()
             {
-                ParsingHelper helper = new ParsingHelper(LongTest);
+                ParsingHelper helper = new(LongTest);
 
                 // SkipTo
                 Assert.IsTrue(helper.SkipTo("score"));
@@ -154,7 +154,7 @@ people, for the people, shall not perish from the earth.";
                 Assert.AreEqual('s', helper.Peek());
 
                 // SkipWhiteSpace with options
-                ParsingHelper helper2 = new ParsingHelper("    \r\nxyz");
+                ParsingHelper helper2 = new("    \r\nxyz");
                 helper2.SkipWhiteSpace(SkipWhiteSpaceOption.StopAtEol);
                 Assert.IsTrue(helper2.MatchesCurrentPosition("\r\nxyz"));
                 helper2.Reset();
@@ -200,7 +200,7 @@ people, for the people, shall not perish from the earth.";
             [TestMethod]
             public void ParseTests()
             {
-                ParsingHelper helper = new ParsingHelper(LongTest);
+                ParsingHelper helper = new(LongTest);
 
                 Assert.IsTrue(helper.SkipTo("score"));
                 Assert.AreEqual("score and seven years ago our ", helper.ParseTo("fathers"));
@@ -262,13 +262,23 @@ people, for the people, shall not perish from the earth.";
                 Assert.AreEqual("def", helper.ParseCharacters(3));
                 Assert.AreEqual("g", helper.ParseCharacters(10));
                 Assert.AreEqual("", helper.ParseCharacters(10));
+
+                // Parse to any string
+                helper.Reset("abcdefg");
+                Assert.AreEqual("abc", helper.ParseTo(new[] { "d", "ef", "g" }, StringComparison.Ordinal));
+                Assert.AreEqual("d", helper.ParseTo(new[] { "d", "ef", "g" }, StringComparison.Ordinal, true));
+                Assert.AreEqual("ef", helper.ParseTo(new[] { "d", "ef", "g" }, StringComparison.Ordinal, true));
+                Assert.AreEqual("g", helper.ParseTo(new[] { "d", "ef", "g" }, StringComparison.Ordinal, true));
+
+                helper.Reset("abcd=ef=>g");
+                Assert.AreEqual("abcd=ef", helper.ParseTo(new[] { "z", "=>", "x" }, StringComparison.Ordinal));
             }
 
             [TestMethod]
             public void QuotedTextTests()
             {
                 // Quoted text
-                ParsingHelper helper = new ParsingHelper(" This is a \"test.\" ");
+                ParsingHelper helper = new(" This is a \"test.\" ");
                 Assert.IsTrue(helper.SkipTo('"'));
                 Assert.AreEqual("test.", helper.ParseQuotedText());
                 Assert.AreEqual(' ', helper.Peek());
@@ -359,7 +369,7 @@ people, for the people, shall not perish from the earth.";
             [TestMethod]
             public void MatchesCurrentPositionTests()
             {
-                ParsingHelper helper = new ParsingHelper(LongTest);
+                ParsingHelper helper = new(LongTest);
                 Assert.IsTrue(helper.SkipTo("consecrated it"));
                 Assert.AreEqual(true, helper.MatchesCurrentPosition("consecrated it"));
                 Assert.AreEqual(true, helper.MatchesCurrentPosition("CONSECRATED IT", StringComparison.OrdinalIgnoreCase));
@@ -381,7 +391,7 @@ people, for the people, shall not perish from the earth.";
             [TestMethod]
             public void ExtractTests()
             {
-                ParsingHelper helper = new ParsingHelper(LongTest);
+                ParsingHelper helper = new(LongTest);
                 string s = "consecrated it";
                 Assert.IsTrue(helper.SkipTo(s));
                 int start = helper.Index;
@@ -406,7 +416,7 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
             [TestMethod]
             public void OperatorOverloadTests()
             {
-                ParsingHelper helper = new ParsingHelper(LongTest);
+                ParsingHelper helper = new(LongTest);
 
                 for (int i = 0; !helper.EndOfText; i++, helper++)
                 {
@@ -437,7 +447,7 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
             public void RegExTests()
             {
                 string text = "summer side creature toothpaste dime wind harbor cake nail attention opinion railway horses garden alley quicksand knot servant fight form park polish toad rub hall";
-                ParsingHelper helper = new ParsingHelper(text);
+                ParsingHelper helper = new(text);
                 string s = helper.ParseTokenRegEx(@"\b[d]\w+");
                 Assert.AreEqual("dime", s);
                 Assert.AreEqual(36, helper.Index);
@@ -538,7 +548,7 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
             [TestMethod]
             public void ParseLineTests()
             {
-                List<(string, List<string>)> tests = new List<(string, List<string>)>
+                List<(string, List<string>)> tests = new()
             {
                 ("a", new List<string>(new[] { "a" })),
                 ("ab", new List<string>(new[] { "ab" })),
@@ -561,8 +571,8 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
                 ("abc\r\ndef\n\rghi\nxyz\r\r", new List<string>(new[] { "abc", "def", "", "ghi", "xyz", "" })),
             };
 
-                ParsingHelper helper = new ParsingHelper(null);
-                List<string> lines = new List<string>();
+                ParsingHelper helper = new(null);
+                List<string> lines = new();
 
                 foreach (var test in tests)
                 {
@@ -580,27 +590,27 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
                 ParsePosition pos;
                 string text = "abc\r\ndef\rghi\nxyz\n";
 
-                List<(int Line, int Column)> values = new List<(int, int)>
-            {
-                (1, 1), // 0
-                (1, 2), // 1
-                (1, 3), // 2
-                (1, 4), // 3
-                (1, 5), // 4
-                (2, 1), // 5
-                (2, 2), // 6
-                (2, 3), // 7
-                (2, 4), // 8
-                (3, 1), // 9
-                (3, 2), // 10
-                (3, 3), // 11
-                (3, 4), // 12
-                (4, 1), // 13
-                (4, 2), // 14
-                (4, 3), // 15
-                (4, 4), // 16
-                (5, 1), // 17
-            };
+                List<(int Line, int Column)> values = new()
+                {
+                    (1, 1), // 0
+                    (1, 2), // 1
+                    (1, 3), // 2
+                    (1, 4), // 3
+                    (1, 5), // 4
+                    (2, 1), // 5
+                    (2, 2), // 6
+                    (2, 3), // 7
+                    (2, 4), // 8
+                    (3, 1), // 9
+                    (3, 2), // 10
+                    (3, 3), // 11
+                    (3, 4), // 12
+                    (4, 1), // 13
+                    (4, 2), // 14
+                    (4, 3), // 15
+                    (4, 4), // 16
+                    (5, 1), // 17
+                };
 
                 for (int i = 0; i < values.Count; i++)
                 {
@@ -609,7 +619,7 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
                     Assert.AreEqual(values[i].Column, pos.Column);
                 }
 
-                ParsingHelper helper = new ParsingHelper(text);
+                ParsingHelper helper = new(text);
                 helper.SkipTo("ghi");
                 pos = helper.GetLineColumn();
                 Assert.AreEqual(3, pos.Line);
