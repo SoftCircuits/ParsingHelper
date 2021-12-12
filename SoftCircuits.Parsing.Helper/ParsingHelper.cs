@@ -922,10 +922,10 @@ namespace SoftCircuits.Parsing.Helper
             if (matches.Count > 0)
             {
                 // Update current position
-#if NETSTANDARD2_0
-                Match lastMatch = matches[matches.Count - 1];
-#else
+#if !NETSTANDARD2_0
                 Match lastMatch = matches[^1];
+#else
+                Match lastMatch = matches[matches.Count - 1];
 #endif
                 InternalIndex = lastMatch.Index + lastMatch.Length;
                 // Return matches
@@ -995,10 +995,10 @@ namespace SoftCircuits.Parsing.Helper
         {
             if (start < 0 || start > Text.Length)
                 throw new ArgumentOutOfRangeException(nameof(start));
-#if NETSTANDARD2_0
-            return  Text.Substring(start);
+#if !NETSTANDARD2_0
+            return Text[start..];
 #else
-            return  Text[start..];
+            return Text.Substring(start);
 #endif
         }
 
@@ -1015,10 +1015,10 @@ namespace SoftCircuits.Parsing.Helper
                 throw new ArgumentOutOfRangeException(nameof(start));
             if (end < start || end > Text.Length)
                 throw new ArgumentOutOfRangeException(nameof(end));
-#if NETSTANDARD2_0
-            return Text.Substring(start, end - start);
-#else
+#if !NETSTANDARD2_0
             return Text[start..end];
+#else
+            return Text.Substring(start, end - start);
 #endif
         }
 
