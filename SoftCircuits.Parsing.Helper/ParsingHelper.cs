@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2019-2021 Jonathan Wood (www.softcircuits.com)
+﻿// Copyright (c) 2019-2022 Jonathan Wood (www.softcircuits.com)
 // Licensed under the MIT license.
 //
 
@@ -58,7 +58,7 @@ namespace SoftCircuits.Parsing.Helper
         /// Sets the text to be parsed and sets the current position to the start of that text.
         /// </summary>
         /// <param name="text">The text to be parsed. Can be <c>null</c>.</param>
-#if NET5_0
+#if !NETSTANDARD2_0
         [MemberNotNull(nameof(Text))]
 #endif
         public void Reset(string? text)
@@ -1003,7 +1003,7 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
-        /// Extracts a substring from the specified range of the text being parsed.
+        /// Extracts a substring from the text being parsed.
         /// </summary>
         /// <param name="start">0-based position of first character to be extracted.</param>
         /// <param name="end">0-based position of the character that follows the last
@@ -1021,6 +1021,34 @@ namespace SoftCircuits.Parsing.Helper
             return Text[start..end];
 #endif
         }
+
+#if !NETSTANDARD2_0
+
+        /// <summary>
+        /// Extracts a substring from the text being parsed.
+        /// </summary>
+        public string this[Range range]
+        {
+            get
+            {
+                (int offset, int length) = range.GetOffsetAndLength(Text.Length);
+                return Text.Substring(offset, length);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the character at the specified index.
+        /// </summary>
+        public char this[Index index] => this[index.GetOffset(Text.Length)];
+
+#endif
+
+        /// <summary>
+        /// Gets the character at the specified index. Returns <see cref="NullChar"/> if <paramref name="index"/>
+        /// is not valid.
+        /// </summary>
+        /// <param name="index">0-based position of the character to return.</param>
+        public char this[int index] => (index >= 0 && index < Text.Length) ? Text[index] : NullChar;
 
         #endregion
 

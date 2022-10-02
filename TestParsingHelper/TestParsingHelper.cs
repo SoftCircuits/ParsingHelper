@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021 Jonathan Wood (www.softcircuits.com)
+// Copyright (c) 2019-2022 Jonathan Wood (www.softcircuits.com)
 // Licensed under the MIT license.
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -411,6 +411,29 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
                 Assert.AreNotEqual("score", helper.Extract(4, 10));
                 Assert.AreEqual(string.Empty, helper.Extract(0, 0));
                 Assert.AreEqual(string.Empty, helper.Extract(LongTest.Length, LongTest.Length));
+
+                helper.Reset("abc");
+                Assert.AreEqual('a', helper[0]);
+                Assert.AreEqual('b', helper[1]);
+                Assert.AreEqual('c', helper[2]);
+                Assert.AreEqual('b', helper[^2]);
+                Assert.AreEqual(ParsingHelper.NullChar, helper[3]);
+                Assert.AreEqual(ParsingHelper.NullChar, helper[-1]);
+
+                helper.Reset(string.Empty);
+                Assert.AreEqual(ParsingHelper.NullChar, helper[0]);
+                Assert.AreEqual(ParsingHelper.NullChar, helper[3]);
+                Assert.AreEqual(ParsingHelper.NullChar, helper[-1]);
+
+                helper.Reset("abc");
+                Assert.AreEqual("a", helper[0..1]);
+                Assert.AreEqual("ab", helper[0..^1]);
+                Assert.AreEqual("ab", helper[0..2]);
+                Assert.AreEqual("abc", helper[0..3]);
+                Assert.ThrowsException<ArgumentOutOfRangeException>(() => helper[0..4]);
+
+                helper.Reset(string.Empty);
+                Assert.ThrowsException<ArgumentOutOfRangeException>(() => helper[0..1]);
             }
 
             [TestMethod]
