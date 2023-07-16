@@ -1,16 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net5.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net7.0;net6.0;net5.0;netstandard2.0</TargetFrameworks>
     <Nullable>annotations</Nullable>
     <Nullable Condition="'$(TargetFramework)' != 'netstandard2.0'">enable</Nullable>
     <LangVersion>9.0</LangVersion>
     <Authors>Jonathan Wood</Authors>
     <Company>SoftCircuits</Company>
     <Product>ParsingHelper</Product>
-    <Copyright>Copyright © 2019-2022 SoftCircuits</Copyright>
+    <Copyright>Copyright © 2019-2023 SoftCircuits</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <PackageReleaseNotes>Added support for index operators to read characters; Added support for range operatores (.NET 5.0 and higher only); Added direct support for .NET 6.0.</PackageReleaseNotes>
+    <PackageReleaseNotes>Added direct support for .NET 7.0; Added AsSpan versions of methods that extract string segments; Added syntax highlighting for regular expression parameters (.NET 7.0 and later only); many performance optimizations.</PackageReleaseNotes>
     <PackageTags>text parse parser parsing text-parser text-parsing parsing-helper .net csharp tokenizer</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/SoftCircuits/ParsingHelper</RepositoryUrl>
@@ -18,7 +18,7 @@
     <Description>A .NET class library that makes it easier to parse text. The library tracks the current position within the text, ensures your code never attempts to access a character at an invalid index, and includes many methods that make parsing easier. The library makes your text-parsing code more concise and more robust. Includes support for regular expressions.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Version>4.2.0</Version>
+    <Version>5.0.0</Version>
     <PackageProjectUrl>https://github.com/SoftCircuits/ParsingHelper</PackageProjectUrl>
     <PackageIcon>Logo_64x64.png</PackageIcon>
     <PackageIconUrl />

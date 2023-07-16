@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2019-2022 Jonathan Wood (www.softcircuits.com)
+﻿// Copyright (c) 2019-2023 Jonathan Wood (www.softcircuits.com)
 // Licensed under the MIT license.
 //
 
@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -31,8 +32,7 @@ namespace SoftCircuits.Parsing.Helper
         public const char NullChar = '\0';
 
         /// <summary>
-        /// Specifies regular expression options used by all methods that use
-        /// regular expressions.
+        /// Specifies regular expression options used by all regular expression methods.
         /// </summary>
         public RegexOptions RegularExpressionOptions { get; set; }
 
@@ -70,6 +70,7 @@ namespace SoftCircuits.Parsing.Helper
         /// <summary>
         /// Sets the current position to the start of the current text.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()
         {
             InternalIndex = 0;
@@ -109,6 +110,7 @@ namespace SoftCircuits.Parsing.Helper
         /// if the current position was at the end of the text being parsed.
         /// </summary>
         /// <returns>The character at the current position.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public char Peek()
         {
             Debug.Assert(InternalIndex >= 0 && InternalIndex <= Text.Length);
@@ -123,6 +125,7 @@ namespace SoftCircuits.Parsing.Helper
         /// <param name="count">Specifies the position of the character to read as the number
         /// of characters ahead of the current position. May be a negative number.</param>
         /// <returns>The character at the specified position.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public char Peek(int count)
         {
             int index = (InternalIndex + count);
@@ -135,6 +138,7 @@ namespace SoftCircuits.Parsing.Helper
         /// being parsed.
         /// </summary>
         /// <returns>The character at the current position.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public char Get()
         {
             Debug.Assert(InternalIndex >= 0 && InternalIndex <= Text.Length);
@@ -156,6 +160,7 @@ namespace SoftCircuits.Parsing.Helper
         /// </summary>
         /// <param name="count">The number of characters to move ahead. Use negative numbers
         /// to move backwards.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Next(int count) => Index = InternalIndex + count;
 
         /// <summary>
@@ -169,6 +174,7 @@ namespace SoftCircuits.Parsing.Helper
         /// Calculates the line and column values that correspond to the current position.
         /// </summary>
         /// <returns>A <see cref="ParsePosition"/> that represents the current position.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ParsePosition GetLineColumn() => ParsePosition.CalculatePosition(Text, InternalIndex);
 
         #region Skip characters
@@ -191,11 +197,13 @@ namespace SoftCircuits.Parsing.Helper
         /// characters.
         /// </summary>
         /// <param name="chars">Characters to skip over.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Skip(params char[] chars) => SkipWhile(chars.Contains);
 
         /// <summary>
         /// Moves the current position to the next character that is not a whitespace character.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SkipWhiteSpace() => SkipWhile(char.IsWhiteSpace);
 
         /// <summary>
@@ -216,7 +224,11 @@ namespace SoftCircuits.Parsing.Helper
         /// Moves the current position past any characters that match the given regular expression.
         /// </summary>
         /// <param name="regularExpression">The regular expression pattern to match.</param>
+#if NET7_0_OR_GREATER
+        public void SkipRegEx([StringSyntax(StringSyntaxAttribute.Regex)] string regularExpression)
+#else
         public void SkipRegEx(string regularExpression)
+#endif
         {
             Regex regex = new(regularExpression, RegularExpressionOptions);
             SkipRegEx(regex);
@@ -312,7 +324,11 @@ namespace SoftCircuits.Parsing.Helper
         /// <param name="includeToken">If <c>true</c> and a match is found, the matching text is
         /// also skipped.</param>
         /// <returns>True if a match was found.</returns>
+#if NET7_0_OR_GREATER
+        public bool SkipToRegEx([StringSyntax(StringSyntaxAttribute.Regex)] string regularExpression, bool includeToken = false)
+#else
         public bool SkipToRegEx(string regularExpression, bool includeToken = false)
+#endif
         {
             Regex regex = new(regularExpression, RegularExpressionOptions);
             return SkipToRegEx(regex, includeToken);
@@ -350,6 +366,7 @@ namespace SoftCircuits.Parsing.Helper
         /// the text being parsed and returns <c>false</c>.
         /// </summary>
         /// <returns>True if a line break character was found. Otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool SkipToEndOfLine() => SkipTo(LineBreakCharacters);
 
         /// <summary>
@@ -381,7 +398,7 @@ namespace SoftCircuits.Parsing.Helper
                 Next();
         }
 
-        #endregion
+#endregion
 
         #region Parse characters
 
@@ -391,7 +408,19 @@ namespace SoftCircuits.Parsing.Helper
         /// </summary>
         /// <returns>A string that contains the parsed character, or an empty string if the current
         /// position was at the end of the text being parsed.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string ParseCharacter() => ParseCharacters(1);
+
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Parses a single character and increments the current position. Returns an empty span
+        /// if the current position was at the end of the text being parsed.
+        /// </summary>
+        /// <returns>A <see cref="ReadOnlySpan{char}"/> that contains the parsed character,
+        /// or an empty span if the current position was at the end of the text being parsed.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReadOnlySpan<char> ParseCharacterAsSpan() => ParseCharactersAsSpan(1);
+#endif
 
         /// <summary>
         /// Parses the specified number of characters starting at the current position and increments
@@ -412,6 +441,27 @@ namespace SoftCircuits.Parsing.Helper
             return Extract(start, InternalIndex);
         }
 
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Parses the specified number of characters starting at the current position and increments
+        /// the current position by the number of characters parsed. Returns a <see cref="ReadOnlySpan{char}"/>
+        /// with the parsed characters. Returns a shorter span if the end of the text is reached.
+        /// </summary>
+        /// <param name="count">The number of characters to parse.</param>
+        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+        public ReadOnlySpan<char> ParseCharactersAsSpan(int count)
+        {
+            int remaining = Remaining;
+            if (count > remaining)
+                count = remaining;
+            else if (count < 0)
+                count = 0;
+            int start = InternalIndex;
+            InternalIndex += count;
+            return ExtractAsSpan(start, InternalIndex);
+        }
+#endif
+
         /// <summary>
         /// Parses characters until the next character for which <paramref name="predicate"/>
         /// returns <c>false</c>, and returns the parsed characters. Can return an empty string.
@@ -426,6 +476,22 @@ namespace SoftCircuits.Parsing.Helper
             return Extract(start, InternalIndex);
         }
 
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Parses characters until the next character for which <paramref name="predicate"/>
+        /// returns <c>false</c>, and returns the parsed characters. Can return an empty span.
+        /// </summary>
+        /// <param name="predicate">Function to test each character. Should return <c>true</c>
+        /// for each character that should be parsed.</param>
+        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+        public ReadOnlySpan<char> ParseWhileAsSpan(Func<char, bool> predicate)
+        {
+            int start = InternalIndex;
+            SkipWhile(predicate);
+            return ExtractAsSpan(start, InternalIndex);
+        }
+#endif
+
         /// <summary>
         /// Parses characters until the next character that is not contained in
         /// <paramref name="chars"/>, and returns a string with the parsed characters.
@@ -434,6 +500,17 @@ namespace SoftCircuits.Parsing.Helper
         /// <param name="chars">Characters to parse.</param>
         /// <returns>A string with the parsed characters.</returns>
         public string Parse(params char[] chars) => ParseWhile(chars.Contains);
+
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Parses characters until the next character that is not contained in
+        /// <paramref name="chars"/>, and returns a <see cref="ReadOnlySpan{char}"/>
+        /// with the parsed characters. Can return an empty span.
+        /// </summary>
+        /// <param name="chars">Characters to parse.</param>
+        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+        public ReadOnlySpan<char> ParseAsSpan(params char[] chars) => ParseWhileAsSpan(chars.Contains);
+#endif
 
         /// <summary>
         /// Parses the next line of text and returns <c>true</c> if successful. Returns false if
@@ -459,6 +536,33 @@ namespace SoftCircuits.Parsing.Helper
             SkipLineBreak();
             return true;
         }
+
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Parses the next line of text and returns <c>true</c> if successful. Returns false if
+        /// the current position was at the end of the text being parsed. The current position is
+        /// moved past the line-break characters to the start of the following line.
+        /// </summary>
+        /// <param name="span">Receives the parsed span.</param>
+        /// <returns>True if successful; otherwise, false if the current position was at the end
+        /// of the text being parsed.</returns>
+        public bool ParseLine(out ReadOnlySpan<char> span)
+        {
+            if (EndOfText)
+            {
+                span = string.Empty;
+                return false;
+            }
+
+            int start = InternalIndex;
+            SkipToEndOfLine();
+            // Extract this line
+            span = ExtractAsSpan(start, InternalIndex);
+            // Move to start of next line
+            SkipLineBreak();
+            return true;
+        }
+#endif
 
         /// <summary>
         /// Parses quoted text. The character at the current position is assumed to be the starting quote
@@ -605,6 +709,23 @@ namespace SoftCircuits.Parsing.Helper
             return Extract(start, InternalIndex);
         }
 
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Parses characters until the next occurrence of any one of the specified characters and
+        /// returns a <see cref="ReadOnlySpan{char}"/> with the parsed characters. If none of the
+        /// specified characters are found, this method parses all character up to the end of the
+        /// text being parsed. Can return an empty span.
+        /// </summary>
+        /// <param name="chars">The characters that cause parsing to end.</param>
+        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+        public ReadOnlySpan<char> ParseToAsSpan(params char[] chars)
+        {
+            int start = InternalIndex;
+            SkipTo(chars);
+            return ExtractAsSpan(start, InternalIndex);
+        }
+#endif
+
         /// <summary>
         /// Parses characters until the next occurrence of the specified string and returns a
         /// string with the parsed characters. If the specified string is not found, this method parses
@@ -620,6 +741,25 @@ namespace SoftCircuits.Parsing.Helper
             SkipTo(s, includeToken);
             return Extract(start, InternalIndex);
         }
+
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Parses characters until the next occurrence of the specified string and returns a
+        /// <see cref="ReadOnlySpan{char}"/> with the parsed characters. If the specified string
+        /// is not found, this method parses all character to the end of the text being parsed.
+        /// Can return an empty span.
+        /// </summary>
+        /// <param name="s">Text that causes parsing to end.</param>
+        /// <param name="includeToken">If <c>true</c> and a match is found, the matching text is
+        /// also parsed.</param>
+        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+        public ReadOnlySpan<char> ParseToAsSpan(string s, bool includeToken = false)
+        {
+            int start = InternalIndex;
+            SkipTo(s, includeToken);
+            return ExtractAsSpan(start, InternalIndex);
+        }
+#endif
 
         /// <summary>
         /// Parses characters until the next occurrence of the specified string and returns a
@@ -639,6 +779,26 @@ namespace SoftCircuits.Parsing.Helper
             return Extract(start, InternalIndex);
         }
 
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Parses characters until the next occurrence of the specified string and returns a
+        /// <see cref="ReadOnlySpan{char}"/> with the parsed characters. If the specified string
+        /// is not found, this method parses all character to the end of the text being parsed.
+        /// Can return an empty span.
+        /// </summary>
+        /// <param name="s">Text that causes parsing to end.</param>
+        /// <param name="comparison">One of the enumeration values that specifies the rules for
+        /// comparing the specified string.</param>
+        /// <param name="includeToken">If <c>true</c> and a match is found, the matching text is
+        /// also parsed.</param>
+        /// <returns>A <see cref="ReadOnlySpan{Char}"/> with the parsed characters.</returns>
+        public ReadOnlySpan<char> ParseToAsSpan(string s, StringComparison comparison, bool includeToken = false)
+        {
+            int start = InternalIndex;
+            SkipTo(s, comparison, includeToken);
+            return ExtractAsSpan(start, InternalIndex);
+        }
+#endif
 
         /// <summary>
         /// Parses characters until the next occurrence of any one of the specified strings and
@@ -683,6 +843,51 @@ namespace SoftCircuits.Parsing.Helper
             return string.Empty;
         }
 
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Parses characters until the next occurrence of any one of the specified strings and
+        /// returns a <see cref="ReadOnlySpan{char}"/> with the parsed characters. If none of the
+        /// specified strings are found, this method parses all character up to the end of the text
+        /// being parsed. Can return an empty span.
+        /// </summary>
+        /// <param name="terms">The strings that cause parsing to end.</param>
+        /// <param name="comparison">One of the enumeration values that specifies the rules for
+        /// comparing the specified string.</param>
+        /// <param name="includeToken">If <c>true</c> and a match is found, the matching text is
+        /// also parsed.</param>
+        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+        public ReadOnlySpan<char> ParseToAsSpan(IEnumerable<string> terms, StringComparison comparison, bool includeToken = false)
+        {
+            if (!EndOfText)
+            {
+                int start = InternalIndex;
+                int matchIndex = int.MaxValue;
+                string? matchTerm = null;
+
+                // Search for each term
+                foreach (string term in terms)
+                {
+                    int i = Text.IndexOf(term, InternalIndex, comparison);
+                    if (i >= 0 && i < matchIndex)
+                    {
+                        matchIndex = i;
+                        matchTerm = term;
+                    }
+                }
+
+                // Check for result
+                if (matchTerm != null)
+                {
+                    InternalIndex = matchIndex;
+                    if (includeToken)
+                        InternalIndex += matchTerm.Length;
+                    return ExtractAsSpan(start, InternalIndex);
+                }
+            }
+            return Span<char>.Empty;
+        }
+#endif
+
         /// <summary>
         /// Parses characters until the start of the next token that matches the given regular
         /// expression and returns a string with the parsed characters. If no match is found, this
@@ -692,11 +897,37 @@ namespace SoftCircuits.Parsing.Helper
         /// <param name="includeToken">If <c>true</c> and a match is found, the matching text is
         /// also parsed.</param>
         /// <returns>A string with the parsed characters.</returns>
+#if NET7_0_OR_GREATER
+        public string ParseToRegEx([StringSyntax(StringSyntaxAttribute.Regex)] string regularExpression, bool includeToken = false)
+#else
         public string ParseToRegEx(string regularExpression, bool includeToken = false)
+#endif
         {
             Regex regex = new(regularExpression, RegularExpressionOptions);
             return ParseToRegEx(regex, includeToken);
         }
+
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Parses characters until the start of the next token that matches the given regular
+        /// expression and returns a <see cref="ReadOnlySpan{char}"/> with the parsed characters.
+        /// If no match is found, this method parses all characters to the end of the text being
+        /// parsed. Can return an empty span.
+        /// </summary>
+        /// <param name="regularExpression">A regular expression that the text must match.</param>
+        /// <param name="includeToken">If <c>true</c> and a match is found, the matching text is
+        /// also parsed.</param>
+        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+#if NET7_0_OR_GREATER
+        public ReadOnlySpan<char> ParseToRegExAsSpan([StringSyntax(StringSyntaxAttribute.Regex)] string regularExpression, bool includeToken = false)
+#else
+        public ReadOnlySpan<char> ParseToRegExAsSpan(string regularExpression, bool includeToken = false)
+#endif
+        {
+            Regex regex = new(regularExpression, RegularExpressionOptions);
+            return ParseToRegExAsSpan(regex, includeToken);
+        }
+#endif
 
         /// <summary>
         /// Parses characters until the start of the next token that matches the given regular
@@ -717,6 +948,28 @@ namespace SoftCircuits.Parsing.Helper
             return Extract(start, InternalIndex);
         }
 
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Parses characters until the start of the next token that matches the given regular
+        /// expression and returns a <see cref="ReadOnlySpan{char}"/> with the parsed characters.
+        /// If no match is found, this method parses all characters to the end of the text being parsed.
+        /// Can return an empty span.
+        /// </summary>
+        /// <param name="regex">A regular expression that the text must match.</param>
+        /// <param name="includeToken">If <c>true</c> and a match is found, the matching text is
+        /// also parsed.</param>
+        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+        public ReadOnlySpan<char> ParseToRegExAsSpan(Regex regex, bool includeToken = false)
+        {
+            if (regex == null)
+                throw new ArgumentNullException(nameof(regex));
+
+            int start = InternalIndex;
+            SkipToRegEx(regex, includeToken);
+            return ExtractAsSpan(start, InternalIndex);
+        }
+#endif
+
         /// <summary>
         /// Parses characters until the next line break character. If no line-break characters are found,
         /// this method parses all characters to the end of the text being parsed.
@@ -729,6 +982,20 @@ namespace SoftCircuits.Parsing.Helper
             return Extract(start, InternalIndex);
         }
 
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Parses characters until the next line break character. If no line-break characters are found,
+        /// this method parses all characters to the end of the text being parsed.
+        /// </summary>
+        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+        public ReadOnlySpan<char> ParseToEndOfLineAsSpan()
+        {
+            int start = InternalIndex;
+            SkipToEndOfLine();
+            return ExtractAsSpan(start, InternalIndex);
+        }
+#endif
+
         /// <summary>
         /// Parses characters until the start of the next line. If no more line break characters are
         /// found, this method parses all characters to the end of the text being parsed.
@@ -740,6 +1007,20 @@ namespace SoftCircuits.Parsing.Helper
             SkipToNextLine();
             return Extract(start, InternalIndex);
         }
+
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Parses characters until the start of the next line. If no more line break characters are
+        /// found, this method parses all characters to the end of the text being parsed.
+        /// </summary>
+        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+        public ReadOnlySpan<char> ParseToNextLineAsSpan()
+        {
+            int start = InternalIndex;
+            SkipToNextLine();
+            return ExtractAsSpan(start, InternalIndex);
+        }
+#endif
 
         #endregion
 
@@ -758,6 +1039,21 @@ namespace SoftCircuits.Parsing.Helper
             return ParseTo(delimiters);
         }
 
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Parses text using the specified delimiter characters. Skips any characters that are in the
+        /// list of delimiters, and then parses any characters that are not in the list of delimiters.
+        /// Returns the parsed characters.
+        /// </summary>
+        /// <param name="delimiters">Token delimiter characters.</param>
+        /// <returns>Returns the parsed token as a span.</returns>
+        public ReadOnlySpan<char> ParseTokenAsSpan(params char[] delimiters)
+        {
+            Skip(delimiters);
+            return ParseToAsSpan(delimiters);
+        }
+#endif
+
         /// <summary>
         /// Parses text using the specified predicate to indicate delimiter characters. Skips any
         /// characters for which <paramref name="predicate"/> returns <c>true</c>, and then parses any
@@ -773,6 +1069,23 @@ namespace SoftCircuits.Parsing.Helper
             return ParseWhile(c => !predicate(c));
         }
 
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Parses text using the specified predicate to indicate delimiter characters. Skips any
+        /// characters for which <paramref name="predicate"/> returns <c>true</c>, and then parses any
+        /// characters for which <paramref name="predicate"/> returns <c>false</c>. Returns the parsed
+        /// characters.
+        /// </summary>
+        /// <param name="predicate">Function that returns <c>true</c> for token delimiter
+        /// characters.</param>
+        /// <returns>Returns the parsed token as a span.</returns>
+        public ReadOnlySpan<char> ParseTokenAsSpan(Func<char, bool> predicate)
+        {
+            SkipWhile(predicate);
+            return ParseWhileAsSpan(c => !predicate(c));
+        }
+#endif
+
         /// <summary>
         /// Parses text using a regular expression. Skips up to the start of the matching text, and then
         /// parses the matching text. If no match is found, the current position is set to the end of
@@ -780,7 +1093,11 @@ namespace SoftCircuits.Parsing.Helper
         /// </summary>
         /// <param name="regularExpression">A regular expression that the token must match.</param>
         /// <returns>Returns the text of the matching token.</returns>
+#if NET7_0_OR_GREATER
+        public string ParseTokenRegEx([StringSyntax(StringSyntaxAttribute.Regex)] string regularExpression)
+#else
         public string ParseTokenRegEx(string regularExpression)
+#endif
         {
             Regex regex = new(regularExpression, RegularExpressionOptions);
             return ParseTokenRegEx(regex);
@@ -900,7 +1217,11 @@ namespace SoftCircuits.Parsing.Helper
         /// </summary>
         /// <param name="regularExpression">A regular expression that the tokens must match.</param>
         /// <returns>Returns the matching tokens.</returns>
+#if NET7_0_OR_GREATER
+        public IEnumerable<string> ParseTokensRegEx([StringSyntax(StringSyntaxAttribute.Regex)] string regularExpression)
+#else
         public IEnumerable<string> ParseTokensRegEx(string regularExpression)
+#endif
         {
             Regex regex = new(regularExpression, RegularExpressionOptions);
             return ParseTokensRegEx(regex);
@@ -922,14 +1243,12 @@ namespace SoftCircuits.Parsing.Helper
             if (matches.Count > 0)
             {
                 // Update current position
-#if !NETSTANDARD2_0
-                Match lastMatch = matches[^1];
-#else
+#pragma warning disable IDE0056 // Use index operator
                 Match lastMatch = matches[matches.Count - 1];
-#endif
+#pragma warning restore IDE0056 // Use index operator
                 InternalIndex = lastMatch.Index + lastMatch.Length;
                 // Return matches
-                foreach (Match match in matches)
+                foreach (Match match in matches.Cast<Match>())
                     yield return match.Value;
             }
             else InternalIndex = Text.Length;
@@ -964,6 +1283,7 @@ namespace SoftCircuits.Parsing.Helper
         /// <param name="s">String to compare.</param>
         /// <returns>Returns <c>true</c> if the given string matches the characters at the current position,
         /// or <c>false</c> otherwise.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MatchesCurrentPosition(string? s) => s != null &&
             s.Length != 0 &&
             string.CompareOrdinal(Text, InternalIndex, s, 0, s.Length) == 0;
@@ -977,6 +1297,7 @@ namespace SoftCircuits.Parsing.Helper
         /// comparison.</param>
         /// <returns>Returns <c>true</c> if the given string matches the characters at the current position,
         /// of <c>false</c> otherwise.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MatchesCurrentPosition(string? s, StringComparison comparison) => s != null &&
             s.Length != 0 &&
             string.Compare(Text, InternalIndex, s, 0, s.Length, comparison) == 0;
@@ -991,16 +1312,21 @@ namespace SoftCircuits.Parsing.Helper
         /// </summary>
         /// <param name="start">0-based position of first character to be extracted.</param>
         /// <returns>Returns the extracted string.</returns>
-        public string Extract(int start)
-        {
-            if (start < 0 || start > Text.Length)
-                throw new ArgumentOutOfRangeException(nameof(start));
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#pragma warning disable IDE0057 // Use range operator
+        public string Extract(int start) => Text.Substring(start);
+#pragma warning restore IDE0057 // Use range operator
+
 #if !NETSTANDARD2_0
-            return Text[start..];
-#else
-            return Text.Substring(start);
+        /// <summary>
+        /// Extracts a span of the text being parsed. The span includes all characters
+        /// from the <paramref name="start"/> position to the end of the text.
+        /// </summary>
+        /// <param name="start">0-based position of first character to be extracted.</param>
+        /// <returns>Returns the extracted span.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReadOnlySpan<char> ExtractAsSpan(int start) => Text.AsSpan(start);
 #endif
-        }
 
         /// <summary>
         /// Extracts a substring from the text being parsed.
@@ -1009,38 +1335,45 @@ namespace SoftCircuits.Parsing.Helper
         /// <param name="end">0-based position of the character that follows the last
         /// character to be extracted.</param>
         /// <returns>Returns the extracted string.</returns>
-        public string Extract(int start, int end)
-        {
-            if (start < 0 || start > Text.Length)
-                throw new ArgumentOutOfRangeException(nameof(start));
-            if (end < start || end > Text.Length)
-                throw new ArgumentOutOfRangeException(nameof(end));
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#pragma warning disable IDE0057 // Use range operator
+        public string Extract(int start, int end) => Text.Substring(start, end - start);
+#pragma warning restore IDE0057 // Use range operator
+
 #if !NETSTANDARD2_0
-            return Text[start..end];
-#else
-            return Text.Substring(start, end - start);
+        /// <summary>
+        /// Extracts a span from the text being parsed.
+        /// </summary>
+        /// <param name="start">0-based position of first character to be extracted.</param>
+        /// <param name="end">0-based position of the character that follows the last
+        /// character to be extracted.</param>
+        /// <returns>A span with the specified characters.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReadOnlySpan<char> ExtractAsSpan(int start, int end) => Text.AsSpan(start, end - start);
 #endif
-        }
 
 #if !NETSTANDARD2_0
-
         /// <summary>
         /// Extracts a substring from the text being parsed.
         /// </summary>
         public string this[Range range]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 (int offset, int length) = range.GetOffsetAndLength(Text.Length);
-                return Text.Substring(offset, length);
+                return Extract(offset, length - offset);
             }
         }
 
         /// <summary>
         /// Gets or sets the character at the specified index.
         /// </summary>
-        public char this[Index index] => this[index.GetOffset(Text.Length)];
-
+        public char this[Index index]
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => this[index.GetOffset(Text.Length)];
+        }
 #endif
 
         /// <summary>
@@ -1048,17 +1381,23 @@ namespace SoftCircuits.Parsing.Helper
         /// is not valid.
         /// </summary>
         /// <param name="index">0-based position of the character to return.</param>
-        public char this[int index] => (index >= 0 && index < Text.Length) ? Text[index] : NullChar;
+        public char this[int index]
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => (index >= 0 && index < Text.Length) ? Text[index] : NullChar;
+        }
 
         #endregion
 
         #region Operator overloads
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator int(ParsingHelper helper) => helper.InternalIndex;
 
         /// <summary>
         /// Move the current position ahead one character.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ParsingHelper operator ++(ParsingHelper helper)
         {
             helper.Next(1);
@@ -1068,6 +1407,7 @@ namespace SoftCircuits.Parsing.Helper
         /// <summary>
         /// Move the current position back one character.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ParsingHelper operator --(ParsingHelper helper)
         {
             helper.Next(-1);
@@ -1075,9 +1415,9 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
-        /// Moves the current position ahead (or back) by the specified
-        /// number of characters.
+        /// Moves the current position ahead by the specified number of characters.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ParsingHelper operator +(ParsingHelper helper, int count)
         {
             helper.Next(count);
@@ -1085,9 +1425,9 @@ namespace SoftCircuits.Parsing.Helper
         }
 
         /// <summary>
-        /// Moves the current position back (or ahead) by the specified
-        /// number of characters.
+        /// Moves the current position back by the specified number of characters.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ParsingHelper operator -(ParsingHelper helper, int count)
         {
             helper.Next(-count);

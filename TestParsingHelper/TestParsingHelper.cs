@@ -275,6 +275,83 @@ people, for the people, shall not perish from the earth.";
             }
 
             [TestMethod]
+            public void ParseSpanTests()
+            {
+                ParsingHelper helper = new(LongTest);
+
+                Assert.IsTrue(helper.SkipTo("score"));
+                Assert.AreEqual("score and seven years ago our ", helper.ParseToAsSpan("fathers").ToString());
+                Assert.AreEqual('f', helper.Peek());
+
+                helper.Reset();
+                Assert.IsTrue(helper.SkipTo("score"));
+                Assert.AreEqual("score and seven years ago our ", helper.ParseToAsSpan("FATHERS", StringComparison.OrdinalIgnoreCase).ToString());
+                Assert.AreEqual('f', helper.Peek());
+
+                helper.Reset();
+                Assert.IsTrue(helper.SkipTo("score"));
+                Assert.AreEqual("score and se", helper.ParseToAsSpan('v', 'X', 'Y', 'Z').ToString());
+                Assert.AreEqual('v', helper.Peek());
+
+                helper.Reset();
+                Assert.IsTrue(helper.SkipTo("score"));
+                Assert.AreEqual("score", helper.ParseAsSpan('e', 'r', 'o', 'c', 's').ToString());
+                Assert.AreEqual(' ', helper.Peek());
+                Assert.AreEqual(" ", helper.ParseAsSpan(' ').ToString());
+                Assert.AreEqual('a', helper.Peek());
+
+                helper.Reset();
+                Assert.IsTrue(helper.SkipTo("score"));
+                Assert.AreEqual("score and seven years ago our fathers brought forth on this continent", helper.ParseWhileAsSpan(c => c != ',').ToString());
+                Assert.AreEqual(',', helper.Peek());
+
+                helper.Next();  // Skip comma
+                Assert.AreEqual("a", helper.ParseTokenAsSpan(char.IsWhiteSpace).ToString());
+                Assert.AreEqual(' ', helper.Peek());
+                Assert.AreEqual('n', helper.Peek(1));
+
+                helper.Reset();
+                Assert.AreEqual("Four", helper.ParseTokenAsSpan(' ', '\r', '\n').ToString());
+                Assert.AreEqual(' ', helper.Peek());
+
+                //string parseAllText = "  \t\tthe \r\n\t\t  rain in\t\t    spain\r\n   falls\r\nmainly  on\tthe\r\nplain.    ";
+                //string[] parseAllResults = new[] { "the", "rain", "in", "spain", "falls", "mainly", "on", "the", "plain" };
+
+                //helper.Reset(parseAllText);
+                //CollectionAssert.AreEqual(parseAllResults, helper.ParseTokens(' ', '\t', '\r', '\n', '.').ToList());
+
+                //helper.Reset();
+                //CollectionAssert.AreEqual(parseAllResults, helper.ParseTokens(c => " \t\r\n.".Contains(c)).ToList());
+
+                // ParseCharacter
+                helper.Reset("abc");
+                Assert.AreEqual("a", helper.ParseCharacterAsSpan().ToString());
+                Assert.AreEqual("b", helper.ParseCharacterAsSpan().ToString());
+                Assert.AreEqual("c", helper.ParseCharacterAsSpan().ToString());
+                Assert.AreEqual("", helper.ParseCharacterAsSpan().ToString());
+
+                // ParseCharacters
+                helper.Reset("abcdefg");
+                Assert.AreEqual("", helper.ParseCharactersAsSpan(0).ToString());
+                Assert.AreEqual("", helper.ParseCharactersAsSpan(-1).ToString());
+                Assert.AreEqual("a", helper.ParseCharactersAsSpan(1).ToString());
+                Assert.AreEqual("bc", helper.ParseCharactersAsSpan(2).ToString());
+                Assert.AreEqual("def", helper.ParseCharactersAsSpan(3).ToString());
+                Assert.AreEqual("g", helper.ParseCharactersAsSpan(10).ToString());
+                Assert.AreEqual("", helper.ParseCharactersAsSpan(10).ToString());
+
+                // Parse to any string
+                helper.Reset("abcdefg");
+                Assert.AreEqual("abc", helper.ParseToAsSpan(new[] { "d", "ef", "g" }, StringComparison.Ordinal).ToString());
+                Assert.AreEqual("d", helper.ParseToAsSpan(new[] { "d", "ef", "g" }, StringComparison.Ordinal, true).ToString());
+                Assert.AreEqual("ef", helper.ParseToAsSpan(new[] { "d", "ef", "g" }, StringComparison.Ordinal, true).ToString());
+                Assert.AreEqual("g", helper.ParseToAsSpan(new[] { "d", "ef", "g" }, StringComparison.Ordinal, true).ToString());
+
+                helper.Reset("abcd=ef=>g");
+                Assert.AreEqual("abcd=ef", helper.ParseToAsSpan(new[] { "z", "=>", "x" }, StringComparison.Ordinal).ToString());
+            }
+
+            [TestMethod]
             public void QuotedTextTests()
             {
                 // Quoted text
@@ -437,6 +514,54 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
             }
 
             [TestMethod]
+            public void ExtractSpanTests()
+            {
+                ParsingHelper helper = new(LongTest);
+                string s = "consecrated it";
+                Assert.IsTrue(helper.SkipTo(s));
+                int start = helper.Index;
+                helper.Next(s.Length);
+                Assert.AreEqual(s, helper.ExtractAsSpan(start, helper.Index).ToString());
+                Assert.AreEqual(@"consecrated it, far above our poor power to add or
+detract. The world will little note, nor long remember what we say here, but it can never forget what they
+did here. It is for us the living, rather, to be dedicated here to the unfinished work which they who fought
+here have thus far so nobly advanced. It is rather for us to be here dedicated to the great task remaining
+before us -- that from these honored dead we take increased devotion to that cause for which they gave the
+last full measure of devotion -- that we here highly resolve that these dead shall not have died in vain --
+that this nation, under God, shall have a new birth of freedom -- and that government of the people, by the
+people, for the people, shall not perish from the earth.", helper.ExtractAsSpan(start).ToString());
+                Assert.AreEqual(LongTest, helper.ExtractAsSpan(0, LongTest.Length).ToString());
+                Assert.AreEqual("score", helper.ExtractAsSpan(5, 10).ToString());
+                Assert.AreNotEqual("score", helper.ExtractAsSpan(5, 11).ToString());
+                Assert.AreNotEqual("score", helper.ExtractAsSpan(4, 10).ToString());
+                Assert.AreEqual(string.Empty, helper.ExtractAsSpan(0, 0).ToString());
+                Assert.AreEqual(string.Empty, helper.ExtractAsSpan(LongTest.Length, LongTest.Length).ToString());
+
+                helper.Reset("abc");
+                Assert.AreEqual('a', helper[0]);
+                Assert.AreEqual('b', helper[1]);
+                Assert.AreEqual('c', helper[2]);
+                Assert.AreEqual('b', helper[^2]);
+                Assert.AreEqual(ParsingHelper.NullChar, helper[3]);
+                Assert.AreEqual(ParsingHelper.NullChar, helper[-1]);
+
+                helper.Reset(string.Empty);
+                Assert.AreEqual(ParsingHelper.NullChar, helper[0]);
+                Assert.AreEqual(ParsingHelper.NullChar, helper[3]);
+                Assert.AreEqual(ParsingHelper.NullChar, helper[-1]);
+
+                helper.Reset("abc");
+                Assert.AreEqual("a", helper.ExtractAsSpan(0, 1).ToString());
+                Assert.AreEqual("ab", helper.ExtractAsSpan(0, helper.Text.Length - 1).ToString());
+                Assert.AreEqual("ab", helper.ExtractAsSpan(0, 2).ToString());
+                Assert.AreEqual("abc", helper.ExtractAsSpan(0, 3).ToString());
+                Assert.ThrowsException<ArgumentOutOfRangeException>(() => helper.ExtractAsSpan(0, 4));
+
+                helper.Reset(string.Empty);
+                Assert.ThrowsException<ArgumentOutOfRangeException>(() => helper[0..1]);
+            }
+
+            [TestMethod]
             public void OperatorOverloadTests()
             {
                 ParsingHelper helper = new(LongTest);
@@ -452,11 +577,15 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
                 Assert.AreEqual(1, helper);
                 helper += 2;
                 Assert.AreEqual(3, helper);
+#pragma warning disable IDE0054 // Use compound assignment
                 helper = helper + 2;
+#pragma warning restore IDE0054 // Use compound assignment
                 Assert.AreEqual(5, helper);
                 helper -= 2;
                 Assert.AreEqual(3, helper);
+#pragma warning disable IDE0054 // Use compound assignment
                 helper = helper - 2;
+#pragma warning restore IDE0054 // Use compound assignment
                 Assert.AreEqual(1, helper);
                 helper--;
                 Assert.AreEqual(0, helper);
@@ -517,12 +646,12 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
                 Regex regex;
                 helper.Reset(text);
 
-                regex = new Regex(@"\b[d]\w+");
+                regex = new(@"\b[d]\w+");
                 s = helper.ParseTokenRegEx(regex);
                 Assert.AreEqual("dime", s);
                 Assert.AreEqual(36, helper.Index);
 
-                regex = new Regex(@"\b[s]\w+");
+                regex = new(@"\b[s]\w+");
                 helper.Reset();
                 results = helper.ParseTokensRegEx(regex);
                 CollectionAssert.AreEqual(new[] {
@@ -531,39 +660,39 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
                 "servant" }, results.ToList());
                 Assert.AreEqual(127, helper.Index);
 
-                regex = new Regex(@"\b[x]\w+");
+                regex = new(@"\b[x]\w+");
                 helper.Reset();
                 s = helper.ParseTokenRegEx(regex);
                 Assert.AreEqual(string.Empty, s);
                 Assert.AreEqual(text.Length, helper.Index);
 
-                regex = new Regex(@"\b[x]\w+");
+                regex = new(@"\b[x]\w+");
                 helper.Reset();
                 results = helper.ParseTokensRegEx(regex);
                 CollectionAssert.AreEqual(new List<string>(), results.ToList());
                 Assert.AreEqual(text.Length, helper.Index);
 
-                regex = new Regex(@"\b[a]\w+");
+                regex = new(@"\b[a]\w+");
                 helper.Reset();
                 helper.SkipToRegEx(regex);
                 Assert.IsTrue(helper.MatchesCurrentPosition("attention"));
 
-                regex = new Regex(@"\b[r]\w+");
+                regex = new(@"\b[r]\w+");
                 s = helper.ParseToRegEx(regex);
                 Assert.AreEqual("attention opinion ", s);
                 Assert.IsTrue(helper.MatchesCurrentPosition("railway "));
 
-                regex = new Regex(@"\b[a]\w+");
+                regex = new(@"\b[a]\w+");
                 helper.Reset();
                 helper.SkipToRegEx(regex, true);
                 Assert.IsTrue(helper.MatchesCurrentPosition(" opinion"));
 
                 helper.Reset("Abc1234def5678ghi");
                 Assert.AreEqual(true, helper.SkipTo("123"));
-                regex = new Regex(@"\d+");
+                regex = new(@"\d+");
                 helper.SkipRegEx(regex);
                 Assert.AreEqual('d', helper.Peek());
-                regex = new Regex(@"[a-z]+");
+                regex = new(@"[a-z]+");
                 helper.SkipRegEx(regex);
                 Assert.AreEqual('5', helper.Peek());
             }
@@ -572,27 +701,27 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
             public void ParseLineTests()
             {
                 List<(string, List<string>)> tests = new()
-            {
-                ("a", new List<string>(new[] { "a" })),
-                ("ab", new List<string>(new[] { "ab" })),
-                ("abc", new List<string>(new[] { "abc" })),
-                ("abc\r", new List<string>(new[] { "abc" })),
-                ("abc\r\n", new List<string>(new[] { "abc" })),
-                ("abc\r\nd", new List<string>(new[] { "abc", "d" })),
-                ("abc\r\nde", new List<string>(new[] { "abc", "de" })),
-                ("abc\r\ndef", new List<string>(new[] { "abc", "def" })),
-                ("abc\r\ndef\n", new List<string>(new[] { "abc", "def" })),
-                ("abc\r\ndef\n\r", new List<string>(new[] { "abc", "def", "" })),
-                ("abc\r\ndef\n\rg", new List<string>(new[] { "abc", "def", "", "g" })),
-                ("abc\r\ndef\n\rgh", new List<string>(new[] { "abc", "def", "", "gh" })),
-                ("abc\r\ndef\n\rghi", new List<string>(new[] { "abc", "def", "", "ghi" })),
-                ("abc\r\ndef\n\rghi\n", new List<string>(new[] { "abc", "def", "", "ghi" })),
-                ("abc\r\ndef\n\rghi\nx", new List<string>(new[] { "abc", "def", "", "ghi", "x" })),
-                ("abc\r\ndef\n\rghi\nxy", new List<string>(new[] { "abc", "def", "", "ghi", "xy" })),
-                ("abc\r\ndef\n\rghi\nxyz", new List<string>(new[] { "abc", "def", "", "ghi", "xyz" })),
-                ("abc\r\ndef\n\rghi\nxyz\r", new List<string>(new[] { "abc", "def", "", "ghi", "xyz" })),
-                ("abc\r\ndef\n\rghi\nxyz\r\r", new List<string>(new[] { "abc", "def", "", "ghi", "xyz", "" })),
-            };
+                {
+                    ("a", new List<string>(new[] { "a" })),
+                    ("ab", new List<string>(new[] { "ab" })),
+                    ("abc", new List<string>(new[] { "abc" })),
+                    ("abc\r", new List<string>(new[] { "abc" })),
+                    ("abc\r\n", new List<string>(new[] { "abc" })),
+                    ("abc\r\nd", new List<string>(new[] { "abc", "d" })),
+                    ("abc\r\nde", new List<string>(new[] { "abc", "de" })),
+                    ("abc\r\ndef", new List<string>(new[] { "abc", "def" })),
+                    ("abc\r\ndef\n", new List<string>(new[] { "abc", "def" })),
+                    ("abc\r\ndef\n\r", new List<string>(new[] { "abc", "def", "" })),
+                    ("abc\r\ndef\n\rg", new List<string>(new[] { "abc", "def", "", "g" })),
+                    ("abc\r\ndef\n\rgh", new List<string>(new[] { "abc", "def", "", "gh" })),
+                    ("abc\r\ndef\n\rghi", new List<string>(new[] { "abc", "def", "", "ghi" })),
+                    ("abc\r\ndef\n\rghi\n", new List<string>(new[] { "abc", "def", "", "ghi" })),
+                    ("abc\r\ndef\n\rghi\nx", new List<string>(new[] { "abc", "def", "", "ghi", "x" })),
+                    ("abc\r\ndef\n\rghi\nxy", new List<string>(new[] { "abc", "def", "", "ghi", "xy" })),
+                    ("abc\r\ndef\n\rghi\nxyz", new List<string>(new[] { "abc", "def", "", "ghi", "xyz" })),
+                    ("abc\r\ndef\n\rghi\nxyz\r", new List<string>(new[] { "abc", "def", "", "ghi", "xyz" })),
+                    ("abc\r\ndef\n\rghi\nxyz\r\r", new List<string>(new[] { "abc", "def", "", "ghi", "xyz", "" })),
+                };
 
                 ParsingHelper helper = new(null);
                 List<string> lines = new();
@@ -603,6 +732,16 @@ people, for the people, shall not perish from the earth.", helper.Extract(start)
                     lines.Clear();
                     while (helper.ParseLine(out string line))
                         lines.Add(line);
+                    CollectionAssert.AreEqual(test.Item2, lines);
+                }
+
+                // Spans
+                foreach (var test in tests)
+                {
+                    helper.Reset(test.Item1);
+                    lines.Clear();
+                    while (helper.ParseLine(out ReadOnlySpan<char> span))
+                        lines.Add(span.ToString());
                     CollectionAssert.AreEqual(test.Item2, lines);
                 }
             }
