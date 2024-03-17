@@ -238,7 +238,7 @@ people, for the people, shall not perish from the earth.";
                 Assert.AreEqual(' ', helper.Peek());
 
                 string parseAllText = "  \t\tthe \r\n\t\t  rain in\t\t    spain\r\n   falls\r\nmainly  on\tthe\r\nplain.    ";
-                string[] parseAllResults = new[] { "the", "rain", "in", "spain", "falls", "mainly", "on", "the", "plain" };
+                string[] parseAllResults = [ "the", "rain", "in", "spain", "falls", "mainly", "on", "the", "plain" ];
 
                 helper.Reset(parseAllText);
                 CollectionAssert.AreEqual(parseAllResults, helper.ParseTokens(' ', '\t', '\r', '\n', '.').ToList());
@@ -265,13 +265,13 @@ people, for the people, shall not perish from the earth.";
 
                 // Parse to any string
                 helper.Reset("abcdefg");
-                Assert.AreEqual("abc", helper.ParseTo(new[] { "d", "ef", "g" }, StringComparison.Ordinal));
-                Assert.AreEqual("d", helper.ParseTo(new[] { "d", "ef", "g" }, StringComparison.Ordinal, true));
-                Assert.AreEqual("ef", helper.ParseTo(new[] { "d", "ef", "g" }, StringComparison.Ordinal, true));
-                Assert.AreEqual("g", helper.ParseTo(new[] { "d", "ef", "g" }, StringComparison.Ordinal, true));
+                Assert.AreEqual("abc", helper.ParseTo([ "d", "ef", "g" ], StringComparison.Ordinal));
+                Assert.AreEqual("d", helper.ParseTo([ "d", "ef", "g" ], StringComparison.Ordinal, true));
+                Assert.AreEqual("ef", helper.ParseTo([ "d", "ef", "g" ], StringComparison.Ordinal, true));
+                Assert.AreEqual("g", helper.ParseTo([ "d", "ef", "g" ], StringComparison.Ordinal, true));
 
                 helper.Reset("abcd=ef=>g");
-                Assert.AreEqual("abcd=ef", helper.ParseTo(new[] { "z", "=>", "x" }, StringComparison.Ordinal));
+                Assert.AreEqual("abcd=ef", helper.ParseTo([ "z", "=>", "x" ], StringComparison.Ordinal));
             }
 
             [TestMethod]
@@ -314,15 +314,6 @@ people, for the people, shall not perish from the earth.";
                 Assert.AreEqual("Four", helper.ParseTokenAsSpan(' ', '\r', '\n').ToString());
                 Assert.AreEqual(' ', helper.Peek());
 
-                //string parseAllText = "  \t\tthe \r\n\t\t  rain in\t\t    spain\r\n   falls\r\nmainly  on\tthe\r\nplain.    ";
-                //string[] parseAllResults = new[] { "the", "rain", "in", "spain", "falls", "mainly", "on", "the", "plain" };
-
-                //helper.Reset(parseAllText);
-                //CollectionAssert.AreEqual(parseAllResults, helper.ParseTokens(' ', '\t', '\r', '\n', '.').ToList());
-
-                //helper.Reset();
-                //CollectionAssert.AreEqual(parseAllResults, helper.ParseTokens(c => " \t\r\n.".Contains(c)).ToList());
-
                 // ParseCharacter
                 helper.Reset("abc");
                 Assert.AreEqual("a", helper.ParseCharacterAsSpan().ToString());
@@ -342,13 +333,13 @@ people, for the people, shall not perish from the earth.";
 
                 // Parse to any string
                 helper.Reset("abcdefg");
-                Assert.AreEqual("abc", helper.ParseToAsSpan(new[] { "d", "ef", "g" }, StringComparison.Ordinal).ToString());
-                Assert.AreEqual("d", helper.ParseToAsSpan(new[] { "d", "ef", "g" }, StringComparison.Ordinal, true).ToString());
-                Assert.AreEqual("ef", helper.ParseToAsSpan(new[] { "d", "ef", "g" }, StringComparison.Ordinal, true).ToString());
-                Assert.AreEqual("g", helper.ParseToAsSpan(new[] { "d", "ef", "g" }, StringComparison.Ordinal, true).ToString());
+                Assert.AreEqual("abc", helper.ParseToAsSpan([ "d", "ef", "g" ], StringComparison.Ordinal).ToString());
+                Assert.AreEqual("d", helper.ParseToAsSpan([ "d", "ef", "g" ], StringComparison.Ordinal, true).ToString());
+                Assert.AreEqual("ef", helper.ParseToAsSpan([ "d", "ef", "g" ], StringComparison.Ordinal, true).ToString());
+                Assert.AreEqual("g", helper.ParseToAsSpan([ "d", "ef", "g" ], StringComparison.Ordinal, true).ToString());
 
                 helper.Reset("abcd=ef=>g");
-                Assert.AreEqual("abcd=ef", helper.ParseToAsSpan(new[] { "z", "=>", "x" }, StringComparison.Ordinal).ToString());
+                Assert.AreEqual("abcd=ef", helper.ParseToAsSpan([ "z", "=>", "x" ], StringComparison.Ordinal).ToString());
             }
 
             [TestMethod]
@@ -454,8 +445,9 @@ people, for the people, shall not perish from the earth.";
                 Assert.AreEqual(false, helper.MatchesCurrentPosition(string.Empty, StringComparison.OrdinalIgnoreCase));
                 Assert.AreEqual(false, helper.MatchesCurrentPosition("consecrated_it"));
                 Assert.AreEqual(false, helper.MatchesCurrentPosition("CONSECRATED_IT", StringComparison.OrdinalIgnoreCase));
-                Assert.AreEqual(true, helper.MatchesCurrentPosition(new[] { 'c', 'o', 'n', 's', 'e', 'c', 'r', 'a', 't', 'e', 'd', ' ', 'i', 't' }));
-                Assert.AreEqual(false, helper.MatchesCurrentPosition(new[] { 'o', 'n', 's', 'e', 'c', 'r', 'a', 't', 'e', 'd', ' ', 'i', 't' }));
+
+                Assert.AreEqual(true, helper.MatchesCurrentPosition((char[])['c', 'o', 'n', 's', 'e', 'c', 'r', 'a', 't', 'e', 'd', ' ', 'i', 't']));
+                Assert.AreEqual(false, helper.MatchesCurrentPosition((char[])['o', 'n', 's', 'e', 'c', 'r', 'a', 't', 'e', 'd', ' ', 'i', 't']));
 
                 helper.Index = LongTest.Length - 1;
                 Assert.AreEqual(false, helper.MatchesCurrentPosition("consecrated it"));
@@ -595,6 +587,8 @@ people, for the people, shall not perish from the earth.", helper.ExtractAsSpan(
                 Assert.AreEqual(0, helper);
             }
 
+            private static readonly string[] StringArray = ["summer", "side", "servant"];
+
             [TestMethod]
             public void RegExTests()
             {
@@ -606,10 +600,7 @@ people, for the people, shall not perish from the earth.", helper.ExtractAsSpan(
 
                 helper.Reset();
                 IEnumerable<string> results = helper.ParseTokensRegEx(@"\b[s]\w+");
-                CollectionAssert.AreEqual(new[] {
-                "summer",
-                "side",
-                "servant" }, results.ToList());
+                CollectionAssert.AreEqual(StringArray, results.ToList());
                 Assert.AreEqual(127, helper.Index);
 
                 helper.Reset();
@@ -654,10 +645,7 @@ people, for the people, shall not perish from the earth.", helper.ExtractAsSpan(
                 regex = new(@"\b[s]\w+");
                 helper.Reset();
                 results = helper.ParseTokensRegEx(regex);
-                CollectionAssert.AreEqual(new[] {
-                "summer",
-                "side",
-                "servant" }, results.ToList());
+                CollectionAssert.AreEqual(StringArray, results.ToList());
                 Assert.AreEqual(127, helper.Index);
 
                 regex = new(@"\b[x]\w+");
@@ -700,31 +688,31 @@ people, for the people, shall not perish from the earth.", helper.ExtractAsSpan(
             [TestMethod]
             public void ParseLineTests()
             {
-                List<(string, List<string>)> tests = new()
-                {
-                    ("a", new List<string>(new[] { "a" })),
-                    ("ab", new List<string>(new[] { "ab" })),
-                    ("abc", new List<string>(new[] { "abc" })),
-                    ("abc\r", new List<string>(new[] { "abc" })),
-                    ("abc\r\n", new List<string>(new[] { "abc" })),
-                    ("abc\r\nd", new List<string>(new[] { "abc", "d" })),
-                    ("abc\r\nde", new List<string>(new[] { "abc", "de" })),
-                    ("abc\r\ndef", new List<string>(new[] { "abc", "def" })),
-                    ("abc\r\ndef\n", new List<string>(new[] { "abc", "def" })),
-                    ("abc\r\ndef\n\r", new List<string>(new[] { "abc", "def", "" })),
-                    ("abc\r\ndef\n\rg", new List<string>(new[] { "abc", "def", "", "g" })),
-                    ("abc\r\ndef\n\rgh", new List<string>(new[] { "abc", "def", "", "gh" })),
-                    ("abc\r\ndef\n\rghi", new List<string>(new[] { "abc", "def", "", "ghi" })),
-                    ("abc\r\ndef\n\rghi\n", new List<string>(new[] { "abc", "def", "", "ghi" })),
-                    ("abc\r\ndef\n\rghi\nx", new List<string>(new[] { "abc", "def", "", "ghi", "x" })),
-                    ("abc\r\ndef\n\rghi\nxy", new List<string>(new[] { "abc", "def", "", "ghi", "xy" })),
-                    ("abc\r\ndef\n\rghi\nxyz", new List<string>(new[] { "abc", "def", "", "ghi", "xyz" })),
-                    ("abc\r\ndef\n\rghi\nxyz\r", new List<string>(new[] { "abc", "def", "", "ghi", "xyz" })),
-                    ("abc\r\ndef\n\rghi\nxyz\r\r", new List<string>(new[] { "abc", "def", "", "ghi", "xyz", "" })),
-                };
+                List<(string, List<string>)> tests =
+                [
+                    ("a", new List<string>([ "a" ])),
+                    ("ab", new List<string>([ "ab" ])),
+                    ("abc", new List<string>([ "abc" ])),
+                    ("abc\r", new List<string>([ "abc" ])),
+                    ("abc\r\n", new List<string>([ "abc" ])),
+                    ("abc\r\nd", new List<string>([ "abc", "d" ])),
+                    ("abc\r\nde", new List<string>([ "abc", "de" ])),
+                    ("abc\r\ndef", new List<string>([ "abc", "def" ])),
+                    ("abc\r\ndef\n", new List<string>([ "abc", "def" ])),
+                    ("abc\r\ndef\n\r", new List<string>([ "abc", "def", "" ])),
+                    ("abc\r\ndef\n\rg", new List<string>([ "abc", "def", "", "g" ])),
+                    ("abc\r\ndef\n\rgh", new List<string>([ "abc", "def", "", "gh" ])),
+                    ("abc\r\ndef\n\rghi", new List<string>([ "abc", "def", "", "ghi" ])),
+                    ("abc\r\ndef\n\rghi\n", new List<string>([ "abc", "def", "", "ghi" ])),
+                    ("abc\r\ndef\n\rghi\nx", new List<string>([ "abc", "def", "", "ghi", "x" ])),
+                    ("abc\r\ndef\n\rghi\nxy", new List<string>([ "abc", "def", "", "ghi", "xy" ])),
+                    ("abc\r\ndef\n\rghi\nxyz", new List<string>([ "abc", "def", "", "ghi", "xyz" ])),
+                    ("abc\r\ndef\n\rghi\nxyz\r", new List<string>([ "abc", "def", "", "ghi", "xyz" ])),
+                    ("abc\r\ndef\n\rghi\nxyz\r\r", new List<string>([ "abc", "def", "", "ghi", "xyz", "" ])),
+                ];
 
                 ParsingHelper helper = new(null);
-                List<string> lines = new();
+                List<string> lines = [];
 
                 foreach (var test in tests)
                 {
@@ -752,8 +740,8 @@ people, for the people, shall not perish from the earth.", helper.ExtractAsSpan(
                 ParsePosition pos;
                 string text = "abc\r\ndef\rghi\nxyz\n";
 
-                List<(int Line, int Column)> values = new()
-                {
+                List<(int Line, int Column)> values =
+                [
                     (1, 1), // 0
                     (1, 2), // 1
                     (1, 3), // 2
@@ -772,7 +760,7 @@ people, for the people, shall not perish from the earth.", helper.ExtractAsSpan(
                     (4, 3), // 15
                     (4, 4), // 16
                     (5, 1), // 17
-                };
+                ];
 
                 for (int i = 0; i < values.Count; i++)
                 {

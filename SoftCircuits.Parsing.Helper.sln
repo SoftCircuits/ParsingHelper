@@ -1,11 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29519.181
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34616.47
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SoftCircuits.Parsing.Helper", "SoftCircuits.Parsing.Helper\SoftCircuits.Parsing.Helper.csproj", "{F76FC2B7-4BD6-4315-86C1-4434D2173649}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestParsingHelper", "TestParsingHelper\TestParsingHelper.csproj", "{FF09DC20-7D47-4DD3-9313-57C25959A863}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestParsingHelper", "TestParsingHelper\TestParsingHelper.csproj", "{FF09DC20-7D47-4DD3-9313-57C25959A863}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F5F306A4-1004-4A4B-80CD-6E88F9A1DB41}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

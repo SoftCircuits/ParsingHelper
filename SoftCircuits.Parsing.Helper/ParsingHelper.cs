@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2019-2023 Jonathan Wood (www.softcircuits.com)
+﻿// Copyright (c) 2019-2024 Jonathan Wood (www.softcircuits.com)
 // Licensed under the MIT license.
 //
 
@@ -416,7 +416,7 @@ namespace SoftCircuits.Parsing.Helper
         /// Parses a single character and increments the current position. Returns an empty span
         /// if the current position was at the end of the text being parsed.
         /// </summary>
-        /// <returns>A <see cref="ReadOnlySpan{char}"/> that contains the parsed character,
+        /// <returns>A <see cref="ReadOnlySpan{T}"/> that contains the parsed character,
         /// or an empty span if the current position was at the end of the text being parsed.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReadOnlySpan<char> ParseCharacterAsSpan() => ParseCharactersAsSpan(1);
@@ -444,11 +444,11 @@ namespace SoftCircuits.Parsing.Helper
 #if !NETSTANDARD2_0
         /// <summary>
         /// Parses the specified number of characters starting at the current position and increments
-        /// the current position by the number of characters parsed. Returns a <see cref="ReadOnlySpan{char}"/>
+        /// the current position by the number of characters parsed. Returns a <see cref="ReadOnlySpan{T}"/>
         /// with the parsed characters. Returns a shorter span if the end of the text is reached.
         /// </summary>
         /// <param name="count">The number of characters to parse.</param>
-        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+        /// <returns>A <see cref="ReadOnlySpan{T}"/> with the parsed characters.</returns>
         public ReadOnlySpan<char> ParseCharactersAsSpan(int count)
         {
             int remaining = Remaining;
@@ -483,7 +483,7 @@ namespace SoftCircuits.Parsing.Helper
         /// </summary>
         /// <param name="predicate">Function to test each character. Should return <c>true</c>
         /// for each character that should be parsed.</param>
-        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+        /// <returns>A <see cref="ReadOnlySpan{T}"/> with the parsed characters.</returns>
         public ReadOnlySpan<char> ParseWhileAsSpan(Func<char, bool> predicate)
         {
             int start = InternalIndex;
@@ -504,11 +504,11 @@ namespace SoftCircuits.Parsing.Helper
 #if !NETSTANDARD2_0
         /// <summary>
         /// Parses characters until the next character that is not contained in
-        /// <paramref name="chars"/>, and returns a <see cref="ReadOnlySpan{char}"/>
+        /// <paramref name="chars"/>, and returns a <see cref="ReadOnlySpan{T}"/>
         /// with the parsed characters. Can return an empty span.
         /// </summary>
         /// <param name="chars">Characters to parse.</param>
-        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+        /// <returns>A <see cref="ReadOnlySpan{T}"/> with the parsed characters.</returns>
         public ReadOnlySpan<char> ParseAsSpan(params char[] chars) => ParseWhileAsSpan(chars.Contains);
 #endif
 
@@ -712,12 +712,12 @@ namespace SoftCircuits.Parsing.Helper
 #if !NETSTANDARD2_0
         /// <summary>
         /// Parses characters until the next occurrence of any one of the specified characters and
-        /// returns a <see cref="ReadOnlySpan{char}"/> with the parsed characters. If none of the
+        /// returns a <see cref="ReadOnlySpan{T}"/> with the parsed characters. If none of the
         /// specified characters are found, this method parses all character up to the end of the
         /// text being parsed. Can return an empty span.
         /// </summary>
         /// <param name="chars">The characters that cause parsing to end.</param>
-        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+        /// <returns>A <see cref="ReadOnlySpan{T}"/> with the parsed characters.</returns>
         public ReadOnlySpan<char> ParseToAsSpan(params char[] chars)
         {
             int start = InternalIndex;
@@ -745,14 +745,14 @@ namespace SoftCircuits.Parsing.Helper
 #if !NETSTANDARD2_0
         /// <summary>
         /// Parses characters until the next occurrence of the specified string and returns a
-        /// <see cref="ReadOnlySpan{char}"/> with the parsed characters. If the specified string
+        /// <see cref="ReadOnlySpan{T}"/> with the parsed characters. If the specified string
         /// is not found, this method parses all character to the end of the text being parsed.
         /// Can return an empty span.
         /// </summary>
         /// <param name="s">Text that causes parsing to end.</param>
         /// <param name="includeToken">If <c>true</c> and a match is found, the matching text is
         /// also parsed.</param>
-        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+        /// <returns>A <see cref="ReadOnlySpan{T}"/> with the parsed characters.</returns>
         public ReadOnlySpan<char> ParseToAsSpan(string s, bool includeToken = false)
         {
             int start = InternalIndex;
@@ -782,7 +782,7 @@ namespace SoftCircuits.Parsing.Helper
 #if !NETSTANDARD2_0
         /// <summary>
         /// Parses characters until the next occurrence of the specified string and returns a
-        /// <see cref="ReadOnlySpan{char}"/> with the parsed characters. If the specified string
+        /// <see cref="ReadOnlySpan{T}"/> with the parsed characters. If the specified string
         /// is not found, this method parses all character to the end of the text being parsed.
         /// Can return an empty span.
         /// </summary>
@@ -846,7 +846,7 @@ namespace SoftCircuits.Parsing.Helper
 #if !NETSTANDARD2_0
         /// <summary>
         /// Parses characters until the next occurrence of any one of the specified strings and
-        /// returns a <see cref="ReadOnlySpan{char}"/> with the parsed characters. If none of the
+        /// returns a <see cref="ReadOnlySpan{T}"/> with the parsed characters. If none of the
         /// specified strings are found, this method parses all character up to the end of the text
         /// being parsed. Can return an empty span.
         /// </summary>
@@ -855,7 +855,7 @@ namespace SoftCircuits.Parsing.Helper
         /// comparing the specified string.</param>
         /// <param name="includeToken">If <c>true</c> and a match is found, the matching text is
         /// also parsed.</param>
-        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+        /// <returns>A <see cref="ReadOnlySpan{T}"/> with the parsed characters.</returns>
         public ReadOnlySpan<char> ParseToAsSpan(IEnumerable<string> terms, StringComparison comparison, bool includeToken = false)
         {
             if (!EndOfText)
@@ -910,14 +910,14 @@ namespace SoftCircuits.Parsing.Helper
 #if !NETSTANDARD2_0
         /// <summary>
         /// Parses characters until the start of the next token that matches the given regular
-        /// expression and returns a <see cref="ReadOnlySpan{char}"/> with the parsed characters.
+        /// expression and returns a <see cref="ReadOnlySpan{T}"/> with the parsed characters.
         /// If no match is found, this method parses all characters to the end of the text being
         /// parsed. Can return an empty span.
         /// </summary>
         /// <param name="regularExpression">A regular expression that the text must match.</param>
         /// <param name="includeToken">If <c>true</c> and a match is found, the matching text is
         /// also parsed.</param>
-        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+        /// <returns>A <see cref="ReadOnlySpan{T}"/> with the parsed characters.</returns>
 #if NET7_0_OR_GREATER
         public ReadOnlySpan<char> ParseToRegExAsSpan([StringSyntax(StringSyntaxAttribute.Regex)] string regularExpression, bool includeToken = false)
 #else
@@ -951,14 +951,14 @@ namespace SoftCircuits.Parsing.Helper
 #if !NETSTANDARD2_0
         /// <summary>
         /// Parses characters until the start of the next token that matches the given regular
-        /// expression and returns a <see cref="ReadOnlySpan{char}"/> with the parsed characters.
+        /// expression and returns a <see cref="ReadOnlySpan{T}"/> with the parsed characters.
         /// If no match is found, this method parses all characters to the end of the text being parsed.
         /// Can return an empty span.
         /// </summary>
         /// <param name="regex">A regular expression that the text must match.</param>
         /// <param name="includeToken">If <c>true</c> and a match is found, the matching text is
         /// also parsed.</param>
-        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+        /// <returns>A <see cref="ReadOnlySpan{T}"/> with the parsed characters.</returns>
         public ReadOnlySpan<char> ParseToRegExAsSpan(Regex regex, bool includeToken = false)
         {
             if (regex == null)
@@ -987,7 +987,7 @@ namespace SoftCircuits.Parsing.Helper
         /// Parses characters until the next line break character. If no line-break characters are found,
         /// this method parses all characters to the end of the text being parsed.
         /// </summary>
-        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+        /// <returns>A <see cref="ReadOnlySpan{T}"/> with the parsed characters.</returns>
         public ReadOnlySpan<char> ParseToEndOfLineAsSpan()
         {
             int start = InternalIndex;
@@ -1013,7 +1013,7 @@ namespace SoftCircuits.Parsing.Helper
         /// Parses characters until the start of the next line. If no more line break characters are
         /// found, this method parses all characters to the end of the text being parsed.
         /// </summary>
-        /// <returns>A <see cref="ReadOnlySpan{char}"/> with the parsed characters.</returns>
+        /// <returns>A <see cref="ReadOnlySpan{T}"/> with the parsed characters.</returns>
         public ReadOnlySpan<char> ParseToNextLineAsSpan()
         {
             int start = InternalIndex;
@@ -1136,7 +1136,6 @@ namespace SoftCircuits.Parsing.Helper
         /// characters indicate delimiter characters that are not part of a token.
         /// </summary>
         /// <param name="delimiters">Token delimiter characters.</param>
-        /// <param name="count">The maxiumum number of tokens to parse.</param>
         /// <returns>Returns the parsed tokens.</returns>
         public IEnumerable<string> ParseTokens(params char[] delimiters)
         {

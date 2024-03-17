@@ -142,6 +142,8 @@ token = helper.ParseToken(char.IsWhiteSpace);
 
 The library also has a number of other methods and overloads for parsing characters.
 
+Note: Methods that return a string also have an `AsSpan` version, which returns a `ReadOnlySpan<char>`. Use this version for less memory allocations and better performance.
+
 ## Parsing Quoted Text
 
 You may have an occassion to parse quoted text. In this case, you will probably want the quoted text (without the quotes). The `ParseQuotedText()` method makes this easy.
