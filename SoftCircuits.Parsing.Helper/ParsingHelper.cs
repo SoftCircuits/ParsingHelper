@@ -21,7 +21,7 @@ namespace SoftCircuits.Parsing.Helper
         /// <summary>
         /// Characters that make up a line break.
         /// </summary>
-        private static readonly char[] LineBreakCharacters = new[] { '\r', '\n' };
+        private static readonly char[] LineBreakCharacters = ['\r', '\n'];
 
         private int InternalIndex;
 
@@ -240,15 +240,19 @@ namespace SoftCircuits.Parsing.Helper
         /// <param name="regex">The regular expression pattern to match.</param>
         public void SkipRegEx(Regex regex)
         {
+#if NETSTANDARD2_0
             if (regex == null)
                 throw new ArgumentNullException(nameof(regex));
+#else
+            ArgumentNullException.ThrowIfNull(regex);
+#endif
 
             Match match = regex.Match(Text, Index);
             if (match.Success && match.Index == Index)
                 InternalIndex += match.Length;
         }
 
-        #endregion
+#endregion
 
         #region Skip to characters
 
@@ -345,8 +349,12 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>True if a match was found.</returns>
         public bool SkipToRegEx(Regex regex, bool includeToken = false)
         {
+#if NETSTANDARD2_0
             if (regex == null)
                 throw new ArgumentNullException(nameof(regex));
+#else
+            ArgumentNullException.ThrowIfNull(regex);
+#endif
 
             Match match = regex.Match(Text, Index);
             if (match.Success)
@@ -884,7 +892,7 @@ namespace SoftCircuits.Parsing.Helper
                     return ExtractAsSpan(start, InternalIndex);
                 }
             }
-            return Span<char>.Empty;
+            return [];
         }
 #endif
 
@@ -940,8 +948,12 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>A string with the parsed characters.</returns>
         public string ParseToRegEx(Regex regex, bool includeToken = false)
         {
+#if NETSTANDARD2_0
             if (regex == null)
                 throw new ArgumentNullException(nameof(regex));
+#else
+            ArgumentNullException.ThrowIfNull(regex);
+#endif
 
             int start = InternalIndex;
             SkipToRegEx(regex, includeToken);
@@ -961,8 +973,12 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>A <see cref="ReadOnlySpan{T}"/> with the parsed characters.</returns>
         public ReadOnlySpan<char> ParseToRegExAsSpan(Regex regex, bool includeToken = false)
         {
+#if NETSTANDARD2_0
             if (regex == null)
                 throw new ArgumentNullException(nameof(regex));
+#else
+            ArgumentNullException.ThrowIfNull(regex);
+#endif
 
             int start = InternalIndex;
             SkipToRegEx(regex, includeToken);
@@ -970,11 +986,11 @@ namespace SoftCircuits.Parsing.Helper
         }
 #endif
 
-        /// <summary>
-        /// Parses characters until the next line break character. If no line-break characters are found,
-        /// this method parses all characters to the end of the text being parsed.
-        /// </summary>
-        /// <returns>A string with the parsed characters.</returns>
+            /// <summary>
+            /// Parses characters until the next line break character. If no line-break characters are found,
+            /// this method parses all characters to the end of the text being parsed.
+            /// </summary>
+            /// <returns>A string with the parsed characters.</returns>
         public string ParseToEndOfLine()
         {
             int start = InternalIndex;
@@ -1022,7 +1038,7 @@ namespace SoftCircuits.Parsing.Helper
         }
 #endif
 
-        #endregion
+#endregion
 
         #region Parse tokens
 
@@ -1112,8 +1128,12 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>Returns the text of the matching token.</returns>
         public string ParseTokenRegEx(Regex regex)
         {
+#if NETSTANDARD2_0
             if (regex == null)
                 throw new ArgumentNullException(nameof(regex));
+#else
+            ArgumentNullException.ThrowIfNull(regex);
+#endif
 
             Match match = regex.Match(Text, Index);
             if (match.Success)
@@ -1235,16 +1255,22 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>Returns the matching tokens.</returns>
         public IEnumerable<string> ParseTokensRegEx(Regex regex)
         {
+#if NETSTANDARD2_0
             if (regex == null)
                 throw new ArgumentNullException(nameof(regex));
+#else
+            ArgumentNullException.ThrowIfNull(regex);
+#endif
 
             MatchCollection matches = regex.Matches(Text, Index);
             if (matches.Count > 0)
             {
                 // Update current position
-#pragma warning disable IDE0056 // Use index operator
+#if NETSTANDARD2_0
                 Match lastMatch = matches[matches.Count - 1];
-#pragma warning restore IDE0056 // Use index operator
+#else
+                Match lastMatch = matches[^1];
+#endif
                 InternalIndex = lastMatch.Index + lastMatch.Length;
                 // Return matches
                 foreach (Match match in matches.Cast<Match>())
@@ -1312,9 +1338,11 @@ namespace SoftCircuits.Parsing.Helper
         /// <param name="start">0-based position of first character to be extracted.</param>
         /// <returns>Returns the extracted string.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable IDE0057 // Use range operator
+#if NETSTANDARD2_0
         public string Extract(int start) => Text.Substring(start);
-#pragma warning restore IDE0057 // Use range operator
+#else
+        public string Extract(int start) => Text[start..];
+#endif
 
 #if !NETSTANDARD2_0
         /// <summary>
@@ -1335,9 +1363,11 @@ namespace SoftCircuits.Parsing.Helper
         /// character to be extracted.</param>
         /// <returns>Returns the extracted string.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable IDE0057 // Use range operator
+#if NETSTANDARD2_0
         public string Extract(int start, int end) => Text.Substring(start, end - start);
-#pragma warning restore IDE0057 // Use range operator
+#else
+        public string Extract(int start, int end) => Text[start..end];
+#endif
 
 #if !NETSTANDARD2_0
         /// <summary>
@@ -1349,9 +1379,7 @@ namespace SoftCircuits.Parsing.Helper
         /// <returns>A span with the specified characters.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReadOnlySpan<char> ExtractAsSpan(int start, int end) => Text.AsSpan(start, end - start);
-#endif
 
-#if !NETSTANDARD2_0
         /// <summary>
         /// Extracts a substring from the text being parsed.
         /// </summary>
@@ -1386,7 +1414,7 @@ namespace SoftCircuits.Parsing.Helper
             get => (index >= 0 && index < Text.Length) ? Text[index] : NullChar;
         }
 
-        #endregion
+#endregion
 
         #region Operator overloads
 

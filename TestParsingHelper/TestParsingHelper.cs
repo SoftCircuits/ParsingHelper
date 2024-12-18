@@ -637,6 +637,8 @@ people, for the people, shall not perish from the earth.", helper.ExtractAsSpan(
                 Regex regex;
                 helper.Reset(text);
 
+#pragma warning disable SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
+
                 regex = new(@"\b[d]\w+");
                 s = helper.ParseTokenRegEx(regex);
                 Assert.AreEqual("dime", s);
@@ -683,6 +685,9 @@ people, for the people, shall not perish from the earth.", helper.ExtractAsSpan(
                 regex = new(@"[a-z]+");
                 helper.SkipRegEx(regex);
                 Assert.AreEqual('5', helper.Peek());
+
+#pragma warning restore SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
+
             }
 
             [TestMethod]
@@ -690,25 +695,25 @@ people, for the people, shall not perish from the earth.", helper.ExtractAsSpan(
             {
                 List<(string, List<string>)> tests =
                 [
-                    ("a", new List<string>([ "a" ])),
-                    ("ab", new List<string>([ "ab" ])),
-                    ("abc", new List<string>([ "abc" ])),
-                    ("abc\r", new List<string>([ "abc" ])),
-                    ("abc\r\n", new List<string>([ "abc" ])),
-                    ("abc\r\nd", new List<string>([ "abc", "d" ])),
-                    ("abc\r\nde", new List<string>([ "abc", "de" ])),
-                    ("abc\r\ndef", new List<string>([ "abc", "def" ])),
-                    ("abc\r\ndef\n", new List<string>([ "abc", "def" ])),
-                    ("abc\r\ndef\n\r", new List<string>([ "abc", "def", "" ])),
-                    ("abc\r\ndef\n\rg", new List<string>([ "abc", "def", "", "g" ])),
-                    ("abc\r\ndef\n\rgh", new List<string>([ "abc", "def", "", "gh" ])),
-                    ("abc\r\ndef\n\rghi", new List<string>([ "abc", "def", "", "ghi" ])),
-                    ("abc\r\ndef\n\rghi\n", new List<string>([ "abc", "def", "", "ghi" ])),
-                    ("abc\r\ndef\n\rghi\nx", new List<string>([ "abc", "def", "", "ghi", "x" ])),
-                    ("abc\r\ndef\n\rghi\nxy", new List<string>([ "abc", "def", "", "ghi", "xy" ])),
-                    ("abc\r\ndef\n\rghi\nxyz", new List<string>([ "abc", "def", "", "ghi", "xyz" ])),
-                    ("abc\r\ndef\n\rghi\nxyz\r", new List<string>([ "abc", "def", "", "ghi", "xyz" ])),
-                    ("abc\r\ndef\n\rghi\nxyz\r\r", new List<string>([ "abc", "def", "", "ghi", "xyz", "" ])),
+                    ("a", new List<string>(["a"])),
+                    ("ab", new List<string>(["ab"])),
+                    ("abc", new List<string>(["abc"])),
+                    ("abc\r", new List<string>(["abc"])),
+                    ("abc\r\n", new List<string>(["abc"])),
+                    ("abc\r\nd", new List<string>(["abc", "d"])),
+                    ("abc\r\nde", new List<string>(["abc", "de"])),
+                    ("abc\r\ndef", new List<string>(["abc", "def"])),
+                    ("abc\r\ndef\n", new List<string>(["abc", "def"])),
+                    ("abc\r\ndef\n\r", new List<string>(["abc", "def", ""])),
+                    ("abc\r\ndef\n\rg", new List<string>(["abc", "def", "", "g"])),
+                    ("abc\r\ndef\n\rgh", new List<string>(["abc", "def", "", "gh"])),
+                    ("abc\r\ndef\n\rghi", new List<string>(["abc", "def", "", "ghi"])),
+                    ("abc\r\ndef\n\rghi\n", new List<string>(["abc", "def", "", "ghi"])),
+                    ("abc\r\ndef\n\rghi\nx", new List<string>(["abc", "def", "", "ghi", "x"])),
+                    ("abc\r\ndef\n\rghi\nxy", new List<string>(["abc", "def", "", "ghi", "xy"])),
+                    ("abc\r\ndef\n\rghi\nxyz", new List<string>(["abc", "def", "", "ghi", "xyz"])),
+                    ("abc\r\ndef\n\rghi\nxyz\r", new List<string>(["abc", "def", "", "ghi", "xyz"])),
+                    ("abc\r\ndef\n\rghi\nxyz\r\r", new List<string>(["abc", "def", "", "ghi", "xyz", ""])),
                 ];
 
                 ParsingHelper helper = new(null);
